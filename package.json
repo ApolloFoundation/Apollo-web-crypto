@@ -1,0 +1,55 @@
+{
+  "name": "apl-web-crypto",
+  "version": "1.0.0",
+  "description": "JS implementation of APL Crypto",
+  "private": true,
+  "scripts": {
+    "test": "jest --config jestconfig.json",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "lint": "tslint -p tsconfig.json",
+    "build": "tsc",
+    "prepublishOnly": "yarn test && yarn lint",
+    "preversion": "yarn lint",
+    "version": "yarn format && git add -A src",
+    "postversion": "git push && git push --tags"
+  },
+  "keywords": [
+    "First Bridge",
+    "Crypto"
+  ],
+  "author": "Ellina Kolisnichenko",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/crypto-js": "3.1.44",
+    "@types/jest": "25.2.1",
+    "@types/jsbn": "1.2.29",
+    "@types/node": "13.13.1",
+    "@typescript-eslint/eslint-plugin": "2.29.0",
+    "@typescript-eslint/parser": "2.29.0",
+    "eslint": "6.8.0",
+    "eslint-plugin-import": "2.20.2",
+    "eslint-plugin-jsx-a11y": "6.2.3",
+    "eslint-plugin-react": "7.19.0",
+    "eslint-plugin-react-hooks": "3.0.0",
+    "fs": "0.0.1-security",
+    "jest": "25.3.0",
+    "prettier": "2.0.4",
+    "ts-jest": "25.4.0",
+    "typescript": "3.8.3"
+  },
+  "files": [
+    "lib/**/*"
+  ],
+  "moduleDirectories": [
+    "node_modules"
+  ],
+  "dependencies": {
+    "crypto-js": "4.0.0",
+    "jsbn": "1.1.0",
+    "node-webcrypto-ossl": "2.0.4",
+    "pvutils": "1.0.17"
+  },
+  "directories": {
+    "lib": "lib"
+  }
+}

@@ -158,4 +158,87 @@ describe('Crypto Tests', () => {
     const result = Crypto.verifySignature(signature, message, publicKey);
     expect(result).toBe(true);
   });
+
+  /**
+   * Test of getSharedKey method, of class Crypto.
+   */
+  test('GetSharedKey byteArr-byteArr', () => {
+    const myPrivateKey: string = Crypto.getPrivateKey(secretPhraseA);
+    const theirPublicKey: string = Crypto.getPublicKey(secretPhraseB);
+    const sharedKeyBytes: number[] = Crypto.getSharedKey(myPrivateKey, theirPublicKey);
+    const expResult: string = converters.byteArrayToHexString(sharedKeyBytes);
+
+    const theirPrivateKey: string = Crypto.getPrivateKey(secretPhraseB);
+    const myPublicKey: string = Crypto.getPublicKey(secretPhraseA);
+    const resultBytes: number[] = Crypto.getSharedKey(theirPrivateKey, myPublicKey);
+    const result: string = converters.byteArrayToHexString(resultBytes);
+
+    expect(result).toEqual(expResult);
+    writeToFile(result, OUT_FILE_SHARED);
+  });
+
+  /**
+   * Test of getSharedKey method, of class Crypto.
+   */
+  test('GetSharedKey 3args', () => {
+    const myPrivateKey: string = Crypto.getPrivateKey(secretPhraseA);
+    const theirPublicKey: string = Crypto.getPublicKey(secretPhraseB);
+    const sharedKeyBytes: number[] = Crypto.getSharedKey(myPrivateKey, theirPublicKey, nonce1);
+    const expResult: string = converters.byteArrayToHexString(sharedKeyBytes);
+
+    const theirPrivateKey: string = Crypto.getPrivateKey(secretPhraseB);
+    const myPublicKey: string = Crypto.getPublicKey(secretPhraseA);
+    const resultBytes: number[] = Crypto.getSharedKey(theirPrivateKey, myPublicKey, nonce1);
+    const result: string = converters.byteArrayToHexString(resultBytes);
+
+    expect(result).toEqual(expResult);
+    writeToFile(result, OUT_FILE_SHARED_NONCE);
+  });
+
+  /**
+   * Test of aesEncrypt method, of class Crypto.
+   */
+  test('AesEncrypt', () => {
+    // const myPrivateKey: string = Crypto.getPrivateKey(secretPhraseA);
+    // const theirPublicKey: string = Crypto.getPublicKey(secretPhraseB);
+    // const sharedKeyBytes: number[] = Crypto.getSharedKey(myPrivateKey, theirPublicKey);
+    // const key: string = converters.byteArrayToHexString(sharedKeyBytes);
+    // const expResult: number[] = converters.stringToByteArray(plainString);
+    // const resultEnc: string = Crypto.aesEncrypt(plainString, key);
+    // const result: object = Crypto.aesDecrypt(resultEnc, key);
+    // expect(result).toEqual(expResult);
+    // writeToFile(resultEnc, OUT_FILE_AES);
+  });
+
+  /**
+   * Test of aesGCMEncrypt method, of class Crypto.
+   */
+  test('AesGCMEncrypt', () => {
+    // const myPrivateKey: string = Crypto.getPrivateKey(secretPhraseA);
+    // const theirPublicKey: string = Crypto.getPublicKey(secretPhraseB);
+    // const sharedKeyBytes: number[] = Crypto.getSharedKey(myPrivateKey, theirPublicKey);
+    // const key: string = converters.byteArrayToHexString(sharedKeyBytes);
+    // const expResult: number[] = converters.stringToByteArray(plainString);
+    // const resultEnc: string = Crypto.aesGCMEncrypt(plainString, key);
+    // const result: object = Crypto.aesGCMDecrypt(resultEnc, key);
+    // expect(result).toEqual(expResult);
+    // writeToFile(resultEnc, OUT_FILE_AES_GCM);
+  });
+
+  /**
+   * Test of rsEncode method, of class Crypto.
+   */
+  test('RsEncode', () => {});
+
+  /**
+   * Test of rsDecode method, of class Crypto.
+   */
+  test('RsDecode', () => {});
+
+  /**
+   * Test of elGamalDecrypt method, of class Crypto.
+   */
+  test('ElGamalDecrypt', () => {
+    // TODO:  test by encrypt and then decript plain_data
+  });
 });

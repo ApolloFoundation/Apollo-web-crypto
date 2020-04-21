@@ -146,7 +146,7 @@ export default {
   },
   // assumes wordArray is Big-Endian
   wordArrayToByteArray: function (wordArray) {
-    return converters.wordArrayToByteArrayImpl(wordArray, true);
+    return this.wordArrayToByteArrayImpl(wordArray, true);
   },
   wordArrayToByteArrayImpl: function (wordArray, isFirstByteHasSign) {
     var len = wordArray.words.length;
@@ -179,7 +179,7 @@ export default {
     }
     return byteArray;
   },
-  byteArrayToString: function (bytes, opt_startIndex, length) {
+  byteArrayToString: function (bytes, opt_startIndex?, length?) {
     if (length == 0) {
       return '';
     }

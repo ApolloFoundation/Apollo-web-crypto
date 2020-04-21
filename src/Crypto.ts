@@ -2,6 +2,7 @@ import * as CryptoJS from 'crypto-js';
 import curve25519 from './helpers/curve25519';
 import curve25519_ from './helpers/curve25519_';
 import converters from './util/converters';
+const pako = require('pako');
 const NodeCrypto = require('node-webcrypto-ossl');
 const crypto = new NodeCrypto.Crypto();
 
@@ -69,7 +70,9 @@ export default class Crypto {
   }
 
   public static getSharedKey(privateKey: string, publicKey: string, nonce?: number[]): number[] {
-    const sharedSecret: number[] = this.getSharedSecret(privateKey, publicKey);
+    const privateKeyBytes = converters.hexStringToByteArray(privateKey);
+    const publicKeyBytes = converters.hexStringToByteArray(publicKey);
+    const sharedSecret: number[] = this.getSharedSecret(privateKeyBytes, publicKeyBytes);
     return this.sharedSecretToSharedKey(sharedSecret, nonce);
   }
 
@@ -82,8 +85,14 @@ export default class Crypto {
     return this.simpleHash(sharedSecret);
   }
 
-  public static aesEncrypt(plaintext: string, sharedKey: string) {
+  public static aesEncrypt(plaintext: string, sharedKey: string): number[] {
     return this.aesEncryptImpl(converters.stringToByteArray(plaintext), {
+      sharedKey: converters.stringToByteArray(sharedKey),
+    });
+  }
+
+  public static aesDecrypt(data: string, sharedKey: string): object {
+    return this.decryptData(converters.hexStringToByteArray(data), {
       sharedKey: converters.stringToByteArray(sharedKey),
     });
   }
@@ -107,14 +116,15 @@ export default class Crypto {
     return curve;
   }
 
-  private static getSharedSecret(key1: string, key2: string): number[] {
+  private static getSharedSecret(key1: number[], key2: number[]): number[] {
     return converters.shortArrayToByteArray(
       curve25519_(converters.byteArrayToShortArray(key1), converters.byteArrayToShortArray(key2), null),
     );
   }
 
-  private static aesEncryptImpl(payload: number[], options: any) {
-    const ivBytes = crypto.randomBytes(16);
+  private static aesEncryptImpl(payload: number[], options: any): number[] {
+    const ivBytes = new Uint32Array(16);
+    crypto.getRandomValues(ivBytes);
 
     // CryptoJS likes WordArray parameters
     const wordArrayPayload: any = converters.byteArrayToWordArray(payload);
@@ -136,5 +146,71 @@ export default class Crypto {
     const ivOut = converters.wordArrayToByteArray(encrypted.iv);
     const ciphertextOut = converters.wordArrayToByteArray(encrypted.ciphertext);
     return ivOut.concat(ciphertextOut);
+  }
+
+  private static decryptData(data: number[], options: any): object {
+    if (!options.sharedKey) {
+      options.sharedKey = this.getSharedSecret(options.privateKey, options.publicKey);
+    }
+
+    const result: any = this.aesDecryptImpl(data, options);
+    let binData = new Uint8Array(result.decrypted);
+    if (!(options.isCompressed === false)) {
+      binData = pako.inflate(binData);
+    }
+    let message;
+    if (!(options.isText === false)) {
+      message = converters.byteArrayToString(binData);
+    } else {
+      message = converters.byteArrayToHexString(binData);
+    }
+    return { message: message, sharedKey: converters.byteArrayToHexString(result.sharedKey) };
+  }
+
+  private static aesDecryptImpl(ivCiphertext: number[], options: any) {
+    if (ivCiphertext.length < 16 || ivCiphertext.length % 16 != 0) {
+      throw {
+        name: 'invalid ciphertext',
+      };
+    }
+
+    const iv: any = converters.byteArrayToWordArray(ivCiphertext.slice(0, 16));
+    const ciphertext = converters.byteArrayToWordArray(ivCiphertext.slice(16));
+
+    // shared key is use for two different purposes here
+    // (1) if nonce exists, shared key represents the shared secret between the private and public keys
+    // (2) if nonce does not exists, shared key is the specific key needed for decryption already xored
+    // with the nonce and hashed
+    let sharedKey;
+    if (!options.sharedKey) {
+      sharedKey = this.getSharedSecret(options.privateKey, options.publicKey);
+    } else {
+      sharedKey = options.sharedKey.slice(0); //clone
+    }
+
+    let key;
+    if (options.nonce) {
+      for (let i = 0; i < 32; i++) {
+        sharedKey[i] ^= options.nonce[i];
+      }
+      const sharedKeyFormatted: any = converters.byteArrayToWordArray(sharedKey);
+      key = CryptoJS.SHA256(sharedKeyFormatted);
+    } else {
+      key = converters.byteArrayToWordArray(sharedKey);
+    }
+
+    // @ts-ignore
+    const encrypted = CryptoJS.lib.CipherParams.create({
+      ciphertext: ciphertext,
+      iv: iv,
+      key: key,
+    });
+
+    const decrypted = CryptoJS.AES.decrypt(encrypted, key, { iv });
+
+    return {
+      decrypted: converters.wordArrayToByteArray(decrypted),
+      sharedKey: converters.wordArrayToByteArray(key),
+    };
   }
 }

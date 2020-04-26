@@ -1,4 +1,5 @@
 import * as CryptoJS from 'crypto-js';
+import { WordArray } from 'crypto-js';
 import curve25519 from './helpers/curve25519';
 import curve25519_ from './helpers/curve25519_';
 import converters from './util/converters';
@@ -40,7 +41,7 @@ export default class Crypto {
     return this.areByteArraysEqual(h, h2);
   }
 
-  public static simpleHash(b1: string | number[], ...nonces): number[] {
+  public static simpleHash(b1: string | number[], ...nonces: any[]): number[] {
     if (typeof b1 === 'string') {
       b1 = converters.stringToByteArray(b1);
     }
@@ -188,7 +189,7 @@ export default class Crypto {
       sharedKey = options.sharedKey.slice(0); //clone
     }
 
-    let key;
+    let key: WordArray;
     if (options.nonce) {
       for (let i = 0; i < 32; i++) {
         sharedKey[i] ^= options.nonce[i];

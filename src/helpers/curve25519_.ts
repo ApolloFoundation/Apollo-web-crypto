@@ -1,7 +1,8 @@
-/******************************************************************************
+// @ts-nocheck
+/** ****************************************************************************
  * Copyright © 2018 Apollo Foundation                                         *
  *                                                                            *
- ******************************************************************************/
+ ***************************************************************************** */
 
 // Copyright (c) 2007 Michele Bini
 // Konstantin Welke, 2008:
@@ -31,31 +32,31 @@
 // The original curve25519 library was released into the public domain
 // by Daniel J. Bernstein
 
-let curve25519_zero = function () {
+const curve25519_zero = function () {
   return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 };
 
-let curve25519_one = function () {
+const curve25519_one = function () {
   return [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 };
 
-let curve25519_two = function () {
+const curve25519_two = function () {
   return [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 };
 
-let curve25519_nine = function () {
+const curve25519_nine = function () {
   return [9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 };
 
-let curve25519_486671 = function () {
+const curve25519_486671 = function () {
   return [27919, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 };
 
-let curve25519_39420360 = function () {
+const curve25519_39420360 = function () {
   return [33224, 601, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 };
 
-let curve25519_r2y = function () {
+const curve25519_r2y = function () {
   return [
     0x1670,
     0x4000,
@@ -76,7 +77,7 @@ let curve25519_r2y = function () {
   ];
 };
 
-let curve25519_2y = function () {
+const curve25519_2y = function () {
   return [
     0x583b,
     0x0262,
@@ -97,7 +98,7 @@ let curve25519_2y = function () {
   ];
 };
 
-let curve25519_clamp = function (curve) {
+const curve25519_clamp = function (curve) {
   curve[0] &= 0xfff8;
   curve[15] &= 0x7fff;
   curve[15] |= 0x4000;
@@ -105,11 +106,11 @@ let curve25519_clamp = function (curve) {
 };
 
 /* return 1 or 0 */
-let curve25519_getbit = function (curve, c) {
+const curve25519_getbit = function (curve, c) {
   return ~~(curve[~~(c / 16)] / Math.pow(2, c % 16)) % 2;
 };
 
-let curve25519_prime = [
+const curve25519_prime = [
   0xffff - 18,
   0xffff,
   0xffff,
@@ -129,7 +130,7 @@ let curve25519_prime = [
 ];
 
 /* group order (a prime near 2^252+2^124) */
-let curve25519_order = [
+const curve25519_order = [
   237,
   211,
   245,
@@ -164,7 +165,7 @@ let curve25519_order = [
   16,
 ];
 
-let curve25519_order_times_8 = [
+const curve25519_order_times_8 = [
   104,
   159,
   174,
@@ -199,9 +200,9 @@ let curve25519_order_times_8 = [
   128,
 ];
 
-let curve25519_convertToByteArray = function (a) {
-  var b = new Int8Array(32);
-  var i;
+const curve25519_convertToByteArray = function (a) {
+  const b = new Int8Array(32);
+  let i;
   for (i = 0; i < 16; i++) {
     b[2 * i] = a[i] & 0xff;
     b[2 * i + 1] = a[i] >> 8;
@@ -210,9 +211,11 @@ let curve25519_convertToByteArray = function (a) {
   return b;
 };
 
-let curve25519_convertToShortArray = function (a) {
-  var b = new Array(16);
-  var i, val1, val2;
+const curve25519_convertToShortArray = function (a) {
+  const b = new Array(16);
+  let i;
+  let val1;
+  let val2;
   for (i = 0; i < 16; i++) {
     val1 = a[i * 2];
     if (val1 < 0) {
@@ -227,30 +230,30 @@ let curve25519_convertToShortArray = function (a) {
   return b;
 };
 
-let curve25519_fillShortArray = function (src, dest) {
-  var i;
+const curve25519_fillShortArray = function (src, dest) {
+  let i;
   for (i = 0; i < 16; i++) {
     dest[i] = src[i];
   }
 };
 
-let curve25519_fillByteArray = function (src, dest) {
-  var i;
+const curve25519_fillByteArray = function (src, dest) {
+  let i;
   for (i = 0; i < 32; i++) {
     dest[i] = src[i];
   }
 };
 
-let curve25519_cpy32 = function (a) {
-  var b = new Int8Array(32);
+const curve25519_cpy32 = function (a) {
+  const b = new Int8Array(32);
   for (let i = 0; i < 32; i++) {
     b[i] = a[i];
   }
   return b;
 };
 
-let curve25519_mula_small = function (p, q, m, x, n, z) {
-  var v = 0;
+const curve25519_mula_small = function (p, q, m, x, n, z) {
+  let v = 0;
   for (let j = 0; j < n; ++j) {
     v += (q[j + m] & 0xff) + z * (x[j] & 0xff);
     p[j + m] = v & 0xff;
@@ -259,12 +262,12 @@ let curve25519_mula_small = function (p, q, m, x, n, z) {
   return v;
 };
 
-let curve25519_mula32 = function (p, x, y, t, z) {
-  var n = 31;
-  var w = 0;
-  var i;
+const curve25519_mula32 = function (p, x, y, t, z) {
+  const n = 31;
+  let w = 0;
+  let i;
   for (i = 0; i < t; i++) {
-    let zy = z * (y[i] & 0xff);
+    const zy = z * (y[i] & 0xff);
     w += curve25519_mula_small(p, p, i, x, n, zy) + (p[i + n] & 0xff) + zy * (x[n] & 0xff);
     p[i + n] = w & 0xff;
     w >>= 8;
@@ -273,10 +276,10 @@ let curve25519_mula32 = function (p, x, y, t, z) {
   return w >> 8;
 };
 
-let curve25519_divmod = function (q, r, n, d, t) {
-  var rn = 0,
-    z = 0;
-  var dt = (d[t - 1] & 0xff) << 8;
+const curve25519_divmod = function (q, r, n, d, t) {
+  let rn = 0;
+  let z = 0;
+  let dt = (d[t - 1] & 0xff) << 8;
   if (t > 1) {
     dt |= d[t - 2] & 0xff;
   }
@@ -296,16 +299,16 @@ let curve25519_divmod = function (q, r, n, d, t) {
   r[t - 1] = rn & 0xff;
 };
 
-let curve25519_numsize = function (x, n) {
+const curve25519_numsize = function (x, n) {
   while (n-- != 0 && x[n] == 0);
   return n + 1;
 };
 
-let curve25519_egcd32 = function (x, y, a, b) {
-  var an = 0,
-    bn = 32,
-    qn = 0,
-    i = 0;
+const curve25519_egcd32 = function (x, y, a, b) {
+  let an = 0;
+  let bn = 32;
+  let qn = 0;
+  let i = 0;
   for (i = 0; i < 32; i++) {
     x[i] = y[i] = 0;
   }
@@ -314,7 +317,7 @@ let curve25519_egcd32 = function (x, y, a, b) {
   if (an == 0) {
     return y; // division by zero
   }
-  let temp = new Int8Array(32);
+  const temp = new Int8Array(32);
   while (true) {
     qn = bn - an + 1;
     curve25519_divmod(temp, b, bn, a, an);
@@ -334,11 +337,11 @@ let curve25519_egcd32 = function (x, y, a, b) {
   }
 };
 
-let curve25519_compare = function (a, b) {
-  var c;
+const curve25519_compare = function (a, b) {
+  let c;
   for (c = 15; c >= 0; c--) {
-    var x = a[c];
-    var y = b[c];
+    const x = a[c];
+    const y = b[c];
     if (x > y) {
       return 1;
     }
@@ -349,39 +352,38 @@ let curve25519_compare = function (a, b) {
   return 0;
 };
 
-let curve25519_cpy16 = function (a) {
-  var r = new Array(16);
-  var i;
+const curve25519_cpy16 = function (a) {
+  const r = new Array(16);
+  let i;
   for (i = 0; i < 16; i++) {
     r[i] = a[i];
   }
   return r;
 };
 
-/***
+/** *
  * BloodyRookie: odd numbers are negativ
  */
-let curve25519_isNegative = function (x) {
+const curve25519_isNegative = function (x) {
   return x[0] & 1;
 };
 
-let curve25519_isOverflow = function (x) {
+const curve25519_isOverflow = function (x) {
   if (x[15] >= 0x8000) return 1;
   if (x[0] >= 0x10000) {
-    var i;
+    let i;
     for (i = 1; i < 15; i++) {
       if (x[i] < 0xffff) {
         return 0;
       }
     }
     return 1;
-  } else {
-    return 0;
   }
+  return 0;
 };
 
-let curve25519_sqr8h = function (r, a7, a6, a5, a4, a3, a2, a1, a0) {
-  var v = 0;
+const curve25519_sqr8h = function (r, a7, a6, a5, a4, a3, a2, a1, a0) {
+  let v = 0;
   r[0] = (v = a0 * a0) & 0xffff;
   r[1] = (v = ~~(v / 0x10000) + 2 * a0 * a1) & 0xffff;
   r[2] = (v = ~~(v / 0x10000) + 2 * a0 * a2 + a1 * a1) & 0xffff;
@@ -400,10 +402,10 @@ let curve25519_sqr8h = function (r, a7, a6, a5, a4, a3, a2, a1, a0) {
   r[15] = ~~(v / 0x10000);
 };
 
-let curve25519_sqrmodp = function (r, a) {
-  var x = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-  var y = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-  var z = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+const curve25519_sqrmodp = function (r, a) {
+  const x = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const y = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const z = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
   curve25519_sqr8h(x, a[15], a[14], a[13], a[12], a[11], a[10], a[9], a[8]);
   curve25519_sqr8h(z, a[7], a[6], a[5], a[4], a[3], a[2], a[1], a[0]);
   curve25519_sqr8h(
@@ -417,7 +419,7 @@ let curve25519_sqrmodp = function (r, a) {
     a[9] + a[1],
     a[8] + a[0],
   );
-  var v = 0;
+  let v = 0;
   r[0] = (v = 0x800000 + z[0] + (y[8] - x[8] - z[8] + x[0] - 0x80) * 38) & 0xffff;
   r[1] = (v = 0x7fff80 + ~~(v / 0x10000) + z[1] + (y[9] - x[9] - z[9] + x[1]) * 38) & 0xffff;
   r[2] = (v = 0x7fff80 + ~~(v / 0x10000) + z[2] + (y[10] - x[10] - z[10] + x[2]) * 38) & 0xffff;
@@ -437,8 +439,8 @@ let curve25519_sqrmodp = function (r, a) {
   curve25519_reduce(r);
 };
 
-let curve25519_mul8h = function (r, a7, a6, a5, a4, a3, a2, a1, a0, b7, b6, b5, b4, b3, b2, b1, b0) {
-  var v = 0;
+const curve25519_mul8h = function (r, a7, a6, a5, a4, a3, a2, a1, a0, b7, b6, b5, b4, b3, b2, b1, b0) {
+  let v = 0;
   r[0] = (v = a0 * b0) & 0xffff;
   r[1] = (v = ~~(v / 0x10000) + a0 * b1 + a1 * b0) & 0xffff;
   r[2] = (v = ~~(v / 0x10000) + a0 * b2 + a1 * b1 + a2 * b0) & 0xffff;
@@ -457,10 +459,10 @@ let curve25519_mul8h = function (r, a7, a6, a5, a4, a3, a2, a1, a0, b7, b6, b5, 
   r[15] = ~~(v / 0x10000);
 };
 
-let curve25519_mulmodp = function (r, a, b) {
-  var x = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-  var y = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-  var z = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+const curve25519_mulmodp = function (r, a, b) {
+  const x = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const y = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const z = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
   curve25519_mul8h(
     x,
     a[15],
@@ -500,7 +502,7 @@ let curve25519_mulmodp = function (r, a, b) {
     b[9] + b[1],
     b[8] + b[0],
   );
-  var v = 0;
+  let v = 0;
   r[0] = (v = 0x800000 + z[0] + (y[8] - x[8] - z[8] + x[0] - 0x80) * 38) & 0xffff;
   r[1] = (v = 0x7fff80 + ~~(v / 0x10000) + z[1] + (y[9] - x[9] - z[9] + x[1]) * 38) & 0xffff;
   r[2] = (v = 0x7fff80 + ~~(v / 0x10000) + z[2] + (y[10] - x[10] - z[10] + x[2]) * 38) & 0xffff;
@@ -520,8 +522,8 @@ let curve25519_mulmodp = function (r, a, b) {
   curve25519_reduce(r);
 };
 
-let curve25519_mulasmall = function (r, a, m) {
-  var v = 0;
+const curve25519_mulasmall = function (r, a, m) {
+  let v = 0;
   r[0] = (v = a[0] * m) & 0xffff;
   r[1] = (v = ~~(v / 0x10000) + a[1] * m) & 0xffff;
   r[2] = (v = ~~(v / 0x10000) + a[2] * m) & 0xffff;
@@ -541,8 +543,8 @@ let curve25519_mulasmall = function (r, a, m) {
   curve25519_reduce(r);
 };
 
-let curve25519_addmodp = function (r, a, b) {
-  var v = 0;
+const curve25519_addmodp = function (r, a, b) {
+  let v = 0;
   r[0] = (v = (~~(a[15] / 0x8000) + ~~(b[15] / 0x8000)) * 19 + a[0] + b[0]) & 0xffff;
   r[1] = (v = ~~(v / 0x10000) + a[1] + b[1]) & 0xffff;
   r[2] = (v = ~~(v / 0x10000) + a[2] + b[2]) & 0xffff;
@@ -561,8 +563,8 @@ let curve25519_addmodp = function (r, a, b) {
   r[15] = ~~(v / 0x10000) + (a[15] % 0x8000) + (b[15] % 0x8000);
 };
 
-let curve25519_submodp = function (r, a, b) {
-  var v = 0;
+const curve25519_submodp = function (r, a, b) {
+  let v = 0;
   r[0] = (v = 0x80000 + (~~(a[15] / 0x8000) - ~~(b[15] / 0x8000) - 1) * 19 + a[0] - b[0]) & 0xffff;
   r[1] = (v = ~~(v / 0x10000) + 0x7fff8 + a[1] - b[1]) & 0xffff;
   r[2] = (v = ~~(v / 0x10000) + 0x7fff8 + a[2] - b[2]) & 0xffff;
@@ -580,17 +582,17 @@ let curve25519_submodp = function (r, a, b) {
   r[14] = (v = ~~(v / 0x10000) + 0x7fff8 + a[14] - b[14]) & 0xffff;
   r[15] = ~~(v / 0x10000) + 0x7ff8 + (a[15] % 0x8000) - (b[15] % 0x8000);
 };
-/****
+/** **
  * BloodyRookie: a^-1 is found via Fermats little theorem:
  * a^p congruent a mod p and therefore a^(p-2) congruent a^-1 mod p
  */
-let curve25519_invmodp = function (r, a, sqrtassist) {
-  var r1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-  var r2 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-  var r3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-  var r4 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-  var r5 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-  var i = 0;
+const curve25519_invmodp = function (r, a, sqrtassist) {
+  const r1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const r2 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const r3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const r4 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const r5 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  let i = 0;
   curve25519_sqrmodp(r2, a); //  2 == 2 * 1
   curve25519_sqrmodp(r3, r2); //  4 == 2 * 2
   curve25519_sqrmodp(r1, r3); //  8 == 2 * 4
@@ -655,17 +657,17 @@ let curve25519_invmodp = function (r, a, sqrtassist) {
   }
 };
 
-/******
+/** ****
  * BloodyRookie: Finding a square root mod p of x if we already know it exists and p congruent 3 mod 8.
  * Using x^((p-1)/2) congruent 1 mod p and 2^((p-1)/2) congruent -1 mod p
  * because of Eulers criterium we see that when we set v=(2x)^((p-5)/8) then
  * i:=2xv^2 is a square root of -1 and thus r=+xv(i-1) and r=-xv(i-1) are the square roots of x.
  */
-let curve25519_sqrtmodp = function (r, x) {
-  var r1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-  var r2 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-  var r3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-  var r4 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+const curve25519_sqrtmodp = function (r, x) {
+  const r1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const r2 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const r3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const r4 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
   curve25519_addmodp(r1, x, x); // r1 = 2x
   curve25519_invmodp(r2, r1, 1); // r2 = (2x)^((p-5)/8) =: v
   curve25519_sqrmodp(r3, r2); // r3 = v^2
@@ -702,14 +704,14 @@ let curve25519_reduce = function (a) {
     return;
   }
 
-  var i;
+  let i;
   for (i = 1; i < 16; i++) {
     a[i] = 0;
   }
-  a[0] = a[0] - 0xffed;
+  a[0] -= 0xffed;
 };
 let curve25519_reduce2 = function (a) {
-  var v = a[15];
+  let v = a[15];
   if (v < 0x8000) return;
   a[15] = v % 0x8000;
   v = ~~(v / 0x8000) * 19;
@@ -749,9 +751,9 @@ let curve25519_reduce2 = function (a) {
 /**
  * Montgomery curve with A=486662 and B=1
  */
-let curve25519_x_to_y2 = function (r, x) {
-  var r1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-  var r2 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+const curve25519_x_to_y2 = function (r, x) {
+  const r1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const r2 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
   curve25519_sqrmodp(r1, x); // r1 = x^2
   curve25519_mulasmall(r2, x, 486662); // r2 = Ax
   curve25519_addmodp(r, r1, r2); //  r = x^2 + Ax
@@ -759,12 +761,12 @@ let curve25519_x_to_y2 = function (r, x) {
   curve25519_mulmodp(r, r1, x); //  r = x^3 + Ax^2 + x
 };
 
-let curve25519_prep = function (r, s, a, b) {
+const curve25519_prep = function (r, s, a, b) {
   curve25519_addmodp(r, a, b);
   curve25519_submodp(s, a, b);
 };
 
-/****
+/** **
  * BloodyRookie: Doubling a point on a Montgomery curve:
  * Point is given in projective coordinates p=x/z
  * 2*P = r/s,
@@ -773,11 +775,11 @@ let curve25519_prep = function (r, s, a, b) {
  *   = 4*x*z * (x^2 + 486662*x*z + z^2)
  *   = 4*x*z * ((x-z)^2 + ((486662+2)/4)(4*x*z))
  */
-let curve25519_dbl = function (r, s, t1, t2) {
-  var r1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-  var r2 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-  var r3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-  var r4 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+const curve25519_dbl = function (r, s, t1, t2) {
+  const r1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const r2 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const r3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const r4 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
   curve25519_sqrmodp(r1, t1); // r1 = t1^2
   curve25519_sqrmodp(r2, t2); // r2 = t2^2
   curve25519_submodp(r3, r1, r2); // r3 = t1^2 - t2^2
@@ -787,7 +789,7 @@ let curve25519_dbl = function (r, s, t1, t2) {
   curve25519_mulmodp(s, r4, r3); //  s = ((t1^2 - t2^2) * 121665 + t1^2) * (t1^2 - t2^2)
 };
 
-/****
+/** **
  * BloodyRookie: Adding 2 points on a Montgomery curve:
  * R = Q + P = r/s when given
  * Q = x/z, P = x_p/z_p, P-Q = x_1/1
@@ -795,10 +797,10 @@ let curve25519_dbl = function (r, s, t1, t2) {
  * s = x_1*((x-z)*(x_p+z_p) - (x+z)*(x_p-z_p))^2
  */
 function curve25519_sum(r, s, t1, t2, t3, t4, x_1) {
-  var r1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-  var r2 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-  var r3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-  var r4 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const r1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const r2 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const r3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const r4 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
   curve25519_mulmodp(r1, t2, t3); // r1 = t2 * t3
   curve25519_mulmodp(r2, t1, t4); // r2 = t1 * t4
   curve25519_addmodp(r3, r1, r2); // r3 = t2 * t3 + t1 * t4
@@ -815,29 +817,29 @@ function curve25519_sum(r, s, t1, t2, t3, t4, x_1) {
  * s -> null ???
  * */
 function curve25519_(f, c, s) {
-  var j,
-    a,
-    x_1,
-    q,
-    fb,
-    counter = 0;
-  var t = new Array(16),
-    t1 = new Array(16),
-    t2 = new Array(16),
-    t3 = new Array(16),
-    t4 = new Array(16);
-  var sb = new Int8Array(32);
-  var temp1 = new Int8Array(32);
-  var temp2 = new Int8Array(64);
-  var temp3 = new Int8Array(64);
+  let j;
+  let a;
+  let x_1;
+  let q;
+  let fb;
+  const counter = 0;
+  let t = new Array(16);
+  var t1 = new Array(16);
+  var t2 = new Array(16);
+  var t3 = new Array(16);
+  var t4 = new Array(16);
+  let sb = new Int8Array(32);
+  let temp1 = new Int8Array(32);
+  const temp2 = new Int8Array(64);
+  const temp3 = new Int8Array(64);
 
   x_1 = c;
   q = [curve25519_one(), curve25519_zero()];
   a = [x_1, curve25519_one()];
 
-  var n = 255;
+  let n = 255;
 
-  /**********************************************************************
+  /** ********************************************************************
    * BloodyRookie:                                                      *
    * Given f = f0*2^0 + f1*2^1 + ... + f255*2^255 and Basepoint a=9/1   *
    * calculate f*a by applying the Montgomery ladder (const time algo): *
@@ -852,14 +854,14 @@ function curve25519_(f, c, s) {
    *      r1 := 2r1                                                     *
    *                                                                    *
    * Result: r0 = x-coordinate of f*a                                   *
-   **********************************************************************/
-  var r0 = new Array(new Array(16), new Array(16));
-  var r1 = new Array(new Array(16), new Array(16));
-  var t1 = new Array(16),
-    t2 = new Array(16);
-  var t3 = new Array(16),
-    t4 = new Array(16);
-  var fi;
+   ********************************************************************* */
+  const r0 = [new Array(16), new Array(16)];
+  const r1 = [new Array(16), new Array(16)];
+  var t1 = new Array(16);
+  var t2 = new Array(16);
+  var t3 = new Array(16);
+  var t4 = new Array(16);
+  let fi;
   while (n >= 0) {
     fi = curve25519_getbit(f, n);
 
@@ -887,7 +889,7 @@ function curve25519_(f, c, s) {
   // q[1]=z-coordinate of k*G=:Pz
   // a = q + G = P + G
   if (s != null) {
-    /*************************************************************************
+    /** ***********************************************************************
      * BloodyRookie: Recovery of the y-coordinate of point P:                *
      *                                                                       *
      * If P=(x,y), P1=(x1, y1), P2=(x2,y2) and P2 = P1 + P then              *
@@ -898,7 +900,7 @@ function curve25519_(f, c, s) {
      *                                                                       *
      * Py =  ((Px * Gx + 1) * (Px + Gx + 2A) - 2A - (Px - Gx)^2 * Qx)/(2*Gy) *
      *    = -((Qx + Px + Gx + A) * (Px - Gx)^2 - Py^2 - Gy^2)/(2*Gy)         *
-     *************************************************************************/
+     ************************************************************************ */
     t = curve25519_cpy16(q[0]);
     curve25519_x_to_y2(t1, t); // t1 = Py^2
     curve25519_invmodp(t3, a[1], 0);
@@ -914,12 +916,12 @@ function curve25519_(f, c, s) {
     fb = curve25519_convertToByteArray(f);
     j = curve25519_isNegative(t1);
     if (j != 0) {
-      /***
+      /** *
        * Py is positiv, so just copy
        */
       sb = curve25519_cpy32(fb);
     } else {
-      /***
+      /** *
        * Py is negative:
        * We will take s = -f^-1 mod q instead of s=f^-1 mod q
        */
@@ -932,7 +934,7 @@ function curve25519_(f, c, s) {
     if ((sb[31] & 0x80) != 0) {
       curve25519_mula_small(sb, sb, 0, curve25519_order, 32, 1);
     }
-    var stmp = curve25519_convertToShortArray(sb);
+    const stmp = curve25519_convertToShortArray(sb);
     curve25519_fillShortArray(stmp, s);
   }
 
@@ -940,29 +942,29 @@ function curve25519_(f, c, s) {
 }
 
 function curve25519_java(f, c, s) {
-  var j,
-    a,
-    x_1,
-    q,
-    fb,
-    counter = 0;
-  var t = new Array(16),
-    t1 = new Array(16),
-    t2 = new Array(16),
-    t3 = new Array(16),
-    t4 = new Array(16);
-  var sb = new Int8Array(32);
-  var temp1 = new Int8Array(32);
-  var temp2 = new Int8Array(64);
-  var temp3 = new Int8Array(64);
+  let j;
+  let a;
+  let x_1;
+  let q;
+  let fb;
+  const counter = 0;
+  let t = new Array(16);
+  var t1 = new Array(16);
+  var t2 = new Array(16);
+  var t3 = new Array(16);
+  var t4 = new Array(16);
+  let sb = new Int8Array(32);
+  let temp1 = new Int8Array(32);
+  const temp2 = new Int8Array(64);
+  const temp3 = new Int8Array(64);
 
   x_1 = c;
   q = [curve25519_one(), curve25519_zero()];
   a = [x_1, curve25519_one()];
 
-  var n = 255;
+  let n = 255;
 
-  /**********************************************************************
+  /** ********************************************************************
    * BloodyRookie:                                                      *
    * Given f = f0*2^0 + f1*2^1 + ... + f255*2^255 and Basepoint a=9/1   *
    * calculate f*a by applying the Montgomery ladder (const time algo): *
@@ -977,14 +979,14 @@ function curve25519_java(f, c, s) {
    *      r1 := 2r1                                                     *
    *                                                                    *
    * Result: r0 = x-coordinate of f*a                                   *
-   **********************************************************************/
-  var r0 = new Array(new Array(16), new Array(16));
-  var r1 = new Array(new Array(16), new Array(16));
-  var t1 = new Array(16),
-    t2 = new Array(16);
-  var t3 = new Array(16),
-    t4 = new Array(16);
-  var fi;
+   ********************************************************************* */
+  const r0 = [new Array(16), new Array(16)];
+  const r1 = [new Array(16), new Array(16)];
+  var t1 = new Array(16);
+  var t2 = new Array(16);
+  var t3 = new Array(16);
+  var t4 = new Array(16);
+  let fi;
   while (n >= 0) {
     fi = curve25519_getbit(f, n);
     if (fi == 0) {
@@ -1010,7 +1012,7 @@ function curve25519_java(f, c, s) {
   // q[1]=z-coordinate of k*G=:Pz
   // a = q + G = P + G
   if (s != null) {
-    /*************************************************************************
+    /** ***********************************************************************
      * BloodyRookie: Recovery of the y-coordinate of point P:                *
      *                                                                       *
      * If P=(x,y), P1=(x1, y1), P2=(x2,y2) and P2 = P1 + P then              *
@@ -1021,7 +1023,7 @@ function curve25519_java(f, c, s) {
      *                                                                       *
      * Py =  ((Px * Gx + 1) * (Px + Gx + 2A) - 2A - (Px - Gx)^2 * Qx)/(2*Gy) *
      *    = -((Qx + Px + Gx + A) * (Px - Gx)^2 - Py^2 - Gy^2)/(2*Gy)         *
-     *************************************************************************/
+     ************************************************************************ */
     t = curve25519_cpy16(q[0]);
     curve25519_x_to_y2(t1, t); // t1 = Py^2
     curve25519_invmodp(t3, a[1], 0);
@@ -1037,12 +1039,12 @@ function curve25519_java(f, c, s) {
     fb = curve25519_convertToByteArray(f);
     j = curve25519_isNegative(t1);
     if (j != 0) {
-      /***
+      /** *
        * Py is positiv, so just copy
        */
       sb = curve25519_cpy32(fb);
     } else {
-      /***
+      /** *
        * Py is negative:
        * We will take s = -f^-1 mod q instead of s=f^-1 mod q
        */
@@ -1055,14 +1057,14 @@ function curve25519_java(f, c, s) {
     if ((sb[31] & 0x80) != 0) {
       curve25519_mula_small(sb, sb, 0, curve25519_order, 32, 1);
     }
-    var stmp = curve25519_convertToShortArray(sb);
+    const stmp = curve25519_convertToShortArray(sb);
     curve25519_fillShortArray(stmp, s);
   }
 
   return q[0];
 }
 
-let curve25519_keygen = function (s, curve) {
+const curve25519_keygen = function (s, curve) {
   curve25519_clamp(curve);
   return curve25519_(curve, curve25519_nine(), s);
 };
@@ -1074,9 +1076,9 @@ let curve25519_keygen = function (s, curve) {
  *   s  [in]  private key for signing
  * returns true on success, false on failure (use different x or h)
  */
-let curve25519_sign = function (v, h, x, s) {
-  let tmp1 = new Int8Array(65);
-  let tmp2 = new Int8Array(33);
+const curve25519_sign = function (v, h, x, s) {
+  const tmp1 = new Int8Array(65);
+  const tmp2 = new Int8Array(33);
   for (let i = 0; i < 32; i++) {
     v[i] = 0;
   }
@@ -1093,32 +1095,32 @@ let curve25519_sign = function (v, h, x, s) {
   return w != 0;
 };
 
-let curve25519_verify = function (Y, v, h, P) {
-  let d = new Int8Array(32);
-  let yx = new Array(new Array(16), new Array(16), new Array(16));
-  let yz = new Array(new Array(16), new Array(16), new Array(16));
-  var s = new Array(new Array(16), new Array(16));
-  var q = new Array(new Array(16), new Array(16));
-  var t1 = new Array(new Array(16), new Array(16), new Array(16));
-  var t2 = new Array(new Array(16), new Array(16), new Array(16));
-  var vi = 0,
-    hi = 0,
-    di = 0,
-    nvh = 0,
-    i = 0,
-    j = 0,
-    k = 0,
-    counter = 1;
+const curve25519_verify = function (Y, v, h, P) {
+  const d = new Int8Array(32);
+  const yx = [new Array(16), new Array(16), new Array(16)];
+  const yz = [new Array(16), new Array(16), new Array(16)];
+  const s = [new Array(16), new Array(16)];
+  const q = [new Array(16), new Array(16)];
+  const t1 = [new Array(16), new Array(16), new Array(16)];
+  const t2 = [new Array(16), new Array(16), new Array(16)];
+  let vi = 0;
+  let hi = 0;
+  let di = 0;
+  let nvh = 0;
+  let i = 0;
+  let j = 0;
+  let k = 0;
+  const counter = 1;
 
-  /******************************************************************
+  /** ****************************************************************
    * Set s[0] to P+G and s[1] to P-G.                               *
    * If sqrt(Py^2) is negativ we switch s[0] and s[1]               *
    *                                                                *
    * s[0] = (Py^2 + Gy^2 - 2 Py Gy)/(Px - Gx)^2 - Px - Gx - 486662  *
    * s[1] = (Py^2 + Gy^2 + 2 Py Gy)/(Px - Gx)^2 - Px - Gx - 486662  *
-   ******************************************************************/
+   ***************************************************************** */
 
-  var p = [curve25519_nine(), curve25519_convertToShortArray(P)];
+  const p = [curve25519_nine(), curve25519_convertToShortArray(P)];
   curve25519_x_to_y2(q[0], p[1]); // q[0] = Py^2
   curve25519_sqrtmodp(t1[0], q[0]); // t1[0] = +-Py
   j = curve25519_isNegative(t1[0]);
@@ -1191,7 +1193,7 @@ let curve25519_verify = function (Y, v, h, P) {
   k = (vi & 1) + (hi & 1);
   curve25519_invmodp(t1[0], yz[k], 0);
   curve25519_mulmodp(t1[1], yx[k], t1[0]);
-  var YY = curve25519_convertToByteArray(t1[1]);
+  const YY = curve25519_convertToByteArray(t1[1]);
   curve25519_fillByteArray(YY, Y);
 };
 

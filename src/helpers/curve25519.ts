@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* Ported to JavaScript from Java 07/01/14.
  *
  * Ported from C to Java by Dmitry Skiba [sahn0], 23/02/08.
@@ -10,15 +11,15 @@
  * Based on work by Daniel J Bernstein, http://cr.yp.to/ecdh.html
  */
 
-//region Constants
+// region Constants
 
-var KEY_SIZE = 32;
+const KEY_SIZE = 32;
 
 /* array length */
-var UNPACKED_SIZE = 16;
+const UNPACKED_SIZE = 16;
 
 /* group order (a prime near 2^252+2^124) */
-var ORDER = [
+const ORDER = [
   237,
   211,
   245,
@@ -54,7 +55,7 @@ var ORDER = [
 ];
 
 /* smallest multiple of the order that's >= 2^255 */
-var ORDER_TIMES_8 = [
+const ORDER_TIMES_8 = [
   104,
   159,
   174,
@@ -90,7 +91,7 @@ var ORDER_TIMES_8 = [
 ];
 
 /* constants 2Gy and 1/(2Gy) */
-var BASE_2Y = [
+const BASE_2Y = [
   22587,
   610,
   29883,
@@ -109,7 +110,7 @@ var BASE_2Y = [
   16035,
 ];
 
-var BASE_R2Y = [
+const BASE_R2Y = [
   5744,
   16384,
   61977,
@@ -128,17 +129,17 @@ var BASE_R2Y = [
   6080,
 ];
 
-var C1 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-var C9 = [9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-var C486671 = [0x6d0f, 0x0007, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-var C39420360 = [0x81c8, 0x0259, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+const C1 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+const C9 = [9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+const C486671 = [0x6d0f, 0x0007, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+const C39420360 = [0x81c8, 0x0259, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-var P25 = 33554431; /* (1 << 25) - 1 */
-var P26 = 67108863; /* (1 << 26) - 1 */
+const P25 = 33554431; /* (1 << 25) - 1 */
+const P26 = 67108863; /* (1 << 26) - 1 */
 
-//#endregion
+// #endregion
 
-//region Key Agreement
+// region Key Agreement
 
 /* Private key clamping
  *   k [out] your private key for key agreement
@@ -150,12 +151,12 @@ function clamp(k) {
   k[0] &= 0xf8;
 }
 
-//endregion
+// endregion
 
-//region radix 2^8 math
+// region radix 2^8 math
 
 function cpy32(d, s) {
-  for (var i = 0; i < 32; i++) d[i] = s[i];
+  for (let i = 0; i < 32; i++) d[i] = s[i];
 }
 
 /* p[m..n+m-1] = q[m..n+m-1] + z * x */
@@ -163,12 +164,12 @@ function cpy32(d, s) {
 
 /* n+m is the size of p and q */
 function mula_small(p, q, m, x, n, z) {
-  m = m | 0;
-  n = n | 0;
-  z = z | 0;
+  m |= 0;
+  n |= 0;
+  z |= 0;
 
-  var v = 0;
-  for (var i = 0; i < n; ++i) {
+  let v = 0;
+  for (let i = 0; i < n; ++i) {
     v += (q[i + m] & 0xff) + z * (x[i] & 0xff);
     p[i + m] = v & 0xff;
     v >>= 8;
@@ -181,14 +182,14 @@ function mula_small(p, q, m, x, n, z) {
  * x is size 32, y is size t, p is size 32+t
  * y is allowed to overlap with p+32 if you don't care about the upper half  */
 function mula32(p, x, y, t, z) {
-  t = t | 0;
-  z = z | 0;
+  t |= 0;
+  z |= 0;
 
-  var n = 31;
-  var w = 0;
-  var i = 0;
+  const n = 31;
+  let w = 0;
+  let i = 0;
   for (; i < t; i++) {
-    var zy = z * (y[i] & 0xff);
+    const zy = z * (y[i] & 0xff);
     w += mula_small(p, p, i, x, n, zy) + (p[i + n] & 0xff) + zy * (x[n] & 0xff);
     p[i + n] = w & 0xff;
     w >>= 8;
@@ -203,18 +204,18 @@ function mula32(p, x, y, t, z) {
  * requires that r[-1] and d[-1] are valid memory locations
  * q may overlap with r+t */
 function divmod(q, r, n, d, t) {
-  n = n | 0;
-  t = t | 0;
+  n |= 0;
+  t |= 0;
 
-  var rn = 0;
-  var dt = (d[t - 1] & 0xff) << 8;
+  let rn = 0;
+  let dt = (d[t - 1] & 0xff) << 8;
   if (t > 1) dt |= d[t - 2] & 0xff;
 
   while (n-- >= t) {
-    var z = (rn << 16) | ((r[n] & 0xff) << 8);
+    let z = (rn << 16) | ((r[n] & 0xff) << 8);
     if (n > 0) z |= r[n - 1] & 0xff;
 
-    var i = n - t + 1;
+    const i = n - t + 1;
     z /= dt;
     rn += mula_small(r, r, i, d, t, -z);
     q[i] = (z + rn) & 0xff;
@@ -238,15 +239,15 @@ function numsize(x, n) {
  * x and y must have 64 bytes space for temporary use.
  * requires that a[-1] and b[-1] are valid memory locations  */
 function egcd32(x, y, a, b) {
-  var an,
-    bn = 32,
-    qn,
-    i;
+  let an;
+  let bn = 32;
+  let qn;
+  let i;
   for (i = 0; i < 32; i++) x[i] = y[i] = 0;
   x[0] = 1;
   an = numsize(a, 32);
   if (an === 0) return y; /* division by zero */
-  var temp = new Array(32);
+  const temp = new Array(32);
   while (true) {
     qn = bn - an + 1;
     divmod(temp, b, bn, a, an);
@@ -262,15 +263,15 @@ function egcd32(x, y, a, b) {
   }
 }
 
-//endregion
+// endregion
 
-//region radix 2^25.5 GF(2^255-19) math
+// region radix 2^25.5 GF(2^255-19) math
 
-//region pack / unpack
+// region pack / unpack
 
 /* Convert to internal format from little-endian byte format */
 function unpack(x, m) {
-  for (var i = 0; i < KEY_SIZE; i += 2) x[i / 2] = (m[i] & 0xff) | ((m[i + 1] & 0xff) << 8);
+  for (let i = 0; i < KEY_SIZE; i += 2) x[i / 2] = (m[i] & 0xff) | ((m[i + 1] & 0xff) << 8);
 }
 
 /* Check if reduced-form input >= 2^255-19 */
@@ -286,13 +287,13 @@ function is_overflow(x) {
  *     set --  if input in range 0 .. P25
  * If you're unsure if the number is reduced, first multiply it by 1.  */
 function pack(x, m) {
-  for (var i = 0; i < UNPACKED_SIZE; ++i) {
+  for (let i = 0; i < UNPACKED_SIZE; ++i) {
     m[2 * i] = x[i] & 0x00ff;
     m[2 * i + 1] = (x[i] & 0xff00) >> 8;
   }
 }
 
-//endregion
+// endregion
 
 function createUnpackedArray() {
   return new Uint16Array(UNPACKED_SIZE);
@@ -300,45 +301,45 @@ function createUnpackedArray() {
 
 /* Copy a number */
 function cpy(d, s) {
-  for (var i = 0; i < UNPACKED_SIZE; ++i) d[i] = s[i];
+  for (let i = 0; i < UNPACKED_SIZE; ++i) d[i] = s[i];
 }
 
 /* Set a number to value, which must be in range -185861411 .. 185861411 */
 function set(d, s) {
   d[0] = s;
-  for (var i = 1; i < UNPACKED_SIZE; ++i) d[i] = 0;
+  for (let i = 1; i < UNPACKED_SIZE; ++i) d[i] = 0;
 }
 
 /* Add/subtract two numbers.  The inputs must be in reduced form, and the
  * output isn't, so to do another addition or subtraction on the output,
  * first multiply it by one to reduce it. */
-var add = c255laddmodp;
-var sub = c255lsubmodp;
+const add = c255laddmodp;
+const sub = c255lsubmodp;
 
 /* Multiply a number by a small integer in range -185861411 .. 185861411.
  * The output is in reduced form, the input x need not be.  x and xy may point
  * to the same buffer. */
-var mul_small = c255lmulasmall;
+const mul_small = c255lmulasmall;
 
 /* Multiply two numbers.  The output is in reduced form, the inputs need not be. */
-var mul = c255lmulmodp;
+const mul = c255lmulmodp;
 
 /* Square a number.  Optimization of  mul25519(x2, x, x)  */
-var sqr = c255lsqrmodp;
+const sqr = c255lsqrmodp;
 
 /* Calculates a reciprocal.  The output is in reduced form, the inputs need not
  * be.  Simply calculates  y = x^(p-2)  so it's not too fast. */
 
 /* When sqrtassist is true, it instead calculates y = x^((p-5)/8) */
 function recip(y, x, sqrtassist) {
-  var t0 = createUnpackedArray();
-  var t1 = createUnpackedArray();
-  var t2 = createUnpackedArray();
-  var t3 = createUnpackedArray();
-  var t4 = createUnpackedArray();
+  const t0 = createUnpackedArray();
+  const t1 = createUnpackedArray();
+  const t2 = createUnpackedArray();
+  const t3 = createUnpackedArray();
+  const t4 = createUnpackedArray();
 
   /* the chain for x^(2^255-21) is straight from djb's implementation */
-  var i;
+  let i;
   sqr(t1, x); /*  2 === 2 * 1	*/
   sqr(t2, t1); /*  4 === 2 * 2	*/
   sqr(t0, t2); /*  8 === 2 * 4	*/
@@ -404,16 +405,16 @@ function recip(y, x, sqrtassist) {
 
 /* checks if x is "negative", requires reduced input */
 function is_negative(x) {
-  var isOverflowOrNegative = is_overflow(x) || x[9] < 0;
-  var leastSignificantBit = x[0] & 1;
+  const isOverflowOrNegative = is_overflow(x) || x[9] < 0;
+  const leastSignificantBit = x[0] & 1;
   return ((isOverflowOrNegative ? 1 : 0) ^ leastSignificantBit) & 0xffffffff;
 }
 
 /* a square root */
 function sqrt(x, u) {
-  var v = createUnpackedArray();
-  var t1 = createUnpackedArray();
-  var t2 = createUnpackedArray();
+  const v = createUnpackedArray();
+  const t1 = createUnpackedArray();
+  const t2 = createUnpackedArray();
 
   add(t1, u, u); /* t1 = 2u		*/
   recip(v, t1, 1); /* v = (2u)^((p-5)/8)	*/
@@ -424,13 +425,13 @@ function sqrt(x, u) {
   mul(x, u, t1); /* x = uv(2uv^2-1)	*/
 }
 
-//endregion
+// endregion
 
-//region JavaScript Fast Math
+// region JavaScript Fast Math
 
 function c255lsqr8h(a7, a6, a5, a4, a3, a2, a1, a0) {
-  var r: any[] = [];
-  var v;
+  const r: any[] = [];
+  let v;
   r[0] = (v = a0 * a0) & 0xffff;
   r[1] = (v = ((v / 0x10000) | 0) + 2 * a0 * a1) & 0xffff;
   r[2] = (v = ((v / 0x10000) | 0) + 2 * a0 * a2 + a1 * a1) & 0xffff;
@@ -451,9 +452,9 @@ function c255lsqr8h(a7, a6, a5, a4, a3, a2, a1, a0) {
 }
 
 function c255lsqrmodp(r, a) {
-  var x = c255lsqr8h(a[15], a[14], a[13], a[12], a[11], a[10], a[9], a[8]);
-  var z = c255lsqr8h(a[7], a[6], a[5], a[4], a[3], a[2], a[1], a[0]);
-  var y = c255lsqr8h(
+  const x = c255lsqr8h(a[15], a[14], a[13], a[12], a[11], a[10], a[9], a[8]);
+  const z = c255lsqr8h(a[7], a[6], a[5], a[4], a[3], a[2], a[1], a[0]);
+  const y = c255lsqr8h(
     a[15] + a[7],
     a[14] + a[6],
     a[13] + a[5],
@@ -464,7 +465,7 @@ function c255lsqrmodp(r, a) {
     a[8] + a[0],
   );
 
-  var v;
+  let v;
   r[0] = (v = 0x800000 + z[0] + (y[8] - x[8] - z[8] + x[0] - 0x80) * 38) & 0xffff;
   r[1] = (v = 0x7fff80 + ((v / 0x10000) | 0) + z[1] + (y[9] - x[9] - z[9] + x[1]) * 38) & 0xffff;
   r[2] = (v = 0x7fff80 + ((v / 0x10000) | 0) + z[2] + (y[10] - x[10] - z[10] + x[2]) * 38) & 0xffff;
@@ -480,13 +481,13 @@ function c255lsqrmodp(r, a) {
   r[12] = (v = 0x7fff80 + ((v / 0x10000) | 0) + z[12] + y[4] - x[4] - z[4] + x[12] * 38) & 0xffff;
   r[13] = (v = 0x7fff80 + ((v / 0x10000) | 0) + z[13] + y[5] - x[5] - z[5] + x[13] * 38) & 0xffff;
   r[14] = (v = 0x7fff80 + ((v / 0x10000) | 0) + z[14] + y[6] - x[6] - z[6] + x[14] * 38) & 0xffff;
-  var r15 = 0x7fff80 + ((v / 0x10000) | 0) + z[15] + y[7] - x[7] - z[7] + x[15] * 38;
+  const r15 = 0x7fff80 + ((v / 0x10000) | 0) + z[15] + y[7] - x[7] - z[7] + x[15] * 38;
   c255lreduce(r, r15);
 }
 
 function c255lmul8h(a7, a6, a5, a4, a3, a2, a1, a0, b7, b6, b5, b4, b3, b2, b1, b0) {
-  var r: any[] = [];
-  var v;
+  const r: any[] = [];
+  let v;
   r[0] = (v = a0 * b0) & 0xffff;
   r[1] = (v = ((v / 0x10000) | 0) + a0 * b1 + a1 * b0) & 0xffff;
   r[2] = (v = ((v / 0x10000) | 0) + a0 * b2 + a1 * b1 + a2 * b0) & 0xffff;
@@ -509,7 +510,7 @@ function c255lmul8h(a7, a6, a5, a4, a3, a2, a1, a0, b7, b6, b5, b4, b3, b2, b1, 
 
 function c255lmulmodp(r, a, b) {
   // Karatsuba multiplication scheme: x*y = (b^2+b)*x1*y1 - b*(x1-x0)*(y1-y0) + (b+1)*x0*y0
-  var x = c255lmul8h(
+  const x = c255lmul8h(
     a[15],
     a[14],
     a[13],
@@ -527,8 +528,8 @@ function c255lmulmodp(r, a, b) {
     b[9],
     b[8],
   );
-  var z = c255lmul8h(a[7], a[6], a[5], a[4], a[3], a[2], a[1], a[0], b[7], b[6], b[5], b[4], b[3], b[2], b[1], b[0]);
-  var y = c255lmul8h(
+  const z = c255lmul8h(a[7], a[6], a[5], a[4], a[3], a[2], a[1], a[0], b[7], b[6], b[5], b[4], b[3], b[2], b[1], b[0]);
+  const y = c255lmul8h(
     a[15] + a[7],
     a[14] + a[6],
     a[13] + a[5],
@@ -547,7 +548,7 @@ function c255lmulmodp(r, a, b) {
     b[8] + b[0],
   );
 
-  var v;
+  let v;
   r[0] = (v = 0x800000 + z[0] + (y[8] - x[8] - z[8] + x[0] - 0x80) * 38) & 0xffff;
   r[1] = (v = 0x7fff80 + ((v / 0x10000) | 0) + z[1] + (y[9] - x[9] - z[9] + x[1]) * 38) & 0xffff;
   r[2] = (v = 0x7fff80 + ((v / 0x10000) | 0) + z[2] + (y[10] - x[10] - z[10] + x[2]) * 38) & 0xffff;
@@ -563,15 +564,15 @@ function c255lmulmodp(r, a, b) {
   r[12] = (v = 0x7fff80 + ((v / 0x10000) | 0) + z[12] + y[4] - x[4] - z[4] + x[12] * 38) & 0xffff;
   r[13] = (v = 0x7fff80 + ((v / 0x10000) | 0) + z[13] + y[5] - x[5] - z[5] + x[13] * 38) & 0xffff;
   r[14] = (v = 0x7fff80 + ((v / 0x10000) | 0) + z[14] + y[6] - x[6] - z[6] + x[14] * 38) & 0xffff;
-  var r15 = 0x7fff80 + ((v / 0x10000) | 0) + z[15] + y[7] - x[7] - z[7] + x[15] * 38;
+  const r15 = 0x7fff80 + ((v / 0x10000) | 0) + z[15] + y[7] - x[7] - z[7] + x[15] * 38;
   c255lreduce(r, r15);
 }
 
 function c255lreduce(a, a15) {
-  var v = a15;
+  let v = a15;
   a[15] = v & 0x7fff;
   v = ((v / 0x8000) | 0) * 19;
-  for (var i = 0; i <= 14; ++i) {
+  for (let i = 0; i <= 14; ++i) {
     a[i] = (v += a[i]) & 0xffff;
     v = (v / 0x10000) | 0;
   }
@@ -580,33 +581,33 @@ function c255lreduce(a, a15) {
 }
 
 function c255laddmodp(r, a, b) {
-  var v;
+  let v;
   r[0] = (v = (((a[15] / 0x8000) | 0) + ((b[15] / 0x8000) | 0)) * 19 + a[0] + b[0]) & 0xffff;
-  for (var i = 1; i <= 14; ++i) r[i] = (v = ((v / 0x10000) | 0) + a[i] + b[i]) & 0xffff;
+  for (let i = 1; i <= 14; ++i) r[i] = (v = ((v / 0x10000) | 0) + a[i] + b[i]) & 0xffff;
 
   r[15] = ((v / 0x10000) | 0) + (a[15] & 0x7fff) + (b[15] & 0x7fff);
 }
 
 function c255lsubmodp(r, a, b) {
-  var v;
+  let v;
   r[0] = (v = 0x80000 + (((a[15] / 0x8000) | 0) - ((b[15] / 0x8000) | 0) - 1) * 19 + a[0] - b[0]) & 0xffff;
-  for (var i = 1; i <= 14; ++i) r[i] = (v = ((v / 0x10000) | 0) + 0x7fff8 + a[i] - b[i]) & 0xffff;
+  for (let i = 1; i <= 14; ++i) r[i] = (v = ((v / 0x10000) | 0) + 0x7fff8 + a[i] - b[i]) & 0xffff;
 
   r[15] = ((v / 0x10000) | 0) + 0x7ff8 + (a[15] & 0x7fff) - (b[15] & 0x7fff);
 }
 
 function c255lmulasmall(r, a, m) {
-  var v;
+  let v;
   r[0] = (v = a[0] * m) & 0xffff;
-  for (var i = 1; i <= 14; ++i) r[i] = (v = ((v / 0x10000) | 0) + a[i] * m) & 0xffff;
+  for (let i = 1; i <= 14; ++i) r[i] = (v = ((v / 0x10000) | 0) + a[i] * m) & 0xffff;
 
-  var r15 = ((v / 0x10000) | 0) + a[15] * m;
+  const r15 = ((v / 0x10000) | 0) + a[15] * m;
   c255lreduce(r, r15);
 }
 
-//endregion
+// endregion
 
-/********************* Elliptic curve *********************/
+/** ******************* Elliptic curve ******************** */
 
 /* y^2 = x^3 + 486662 x^2 + x  over GF(2^255-19) */
 
@@ -659,14 +660,15 @@ function x_to_y2(t, y2, x) {
 
 /* P = kG   and  s = sign(P)/k  */
 function core(Px, s, k, Gx) {
-  var dx = createUnpackedArray();
-  var t1 = createUnpackedArray();
-  var t2 = createUnpackedArray();
-  var t3 = createUnpackedArray();
-  var t4 = createUnpackedArray();
-  var x = [createUnpackedArray(), createUnpackedArray()];
-  var z = [createUnpackedArray(), createUnpackedArray()];
-  var i, j;
+  const dx = createUnpackedArray();
+  const t1 = createUnpackedArray();
+  const t2 = createUnpackedArray();
+  const t3 = createUnpackedArray();
+  const t4 = createUnpackedArray();
+  const x = [createUnpackedArray(), createUnpackedArray()];
+  const z = [createUnpackedArray(), createUnpackedArray()];
+  let i;
+  let j;
 
   /* unpack the base */
   if (Gx !== null) unpack(dx, Gx);
@@ -683,12 +685,12 @@ function core(Px, s, k, Gx) {
   for (i = 32; i-- !== 0; ) {
     for (j = 8; j-- !== 0; ) {
       /* swap arguments depending on bit */
-      var bit1 = ((k[i] & 0xff) >> j) & 1;
-      var bit0 = (~(k[i] & 0xff) >> j) & 1;
-      var ax = x[bit0];
-      var az = z[bit0];
-      var bx = x[bit1];
-      var bz = z[bit1];
+      const bit1 = ((k[i] & 0xff) >> j) & 1;
+      const bit0 = (~(k[i] & 0xff) >> j) & 1;
+      const ax = x[bit0];
+      const az = z[bit0];
+      const bx = x[bit1];
+      const bz = z[bit1];
 
       /* a' = a + b	*/
       /* b' = 2 b	*/
@@ -723,19 +725,19 @@ function core(Px, s, k, Gx) {
 
     /* reduce s mod q
      * (is this needed?  do it just in case, it's fast anyway) */
-    //divmod((dstptr) t1, s, 32, order25519, 32);
+    // divmod((dstptr) t1, s, 32, order25519, 32);
 
     /* take reciprocal of s mod q */
-    var temp1 = new Array(32);
-    var temp2 = new Array(64);
-    var temp3 = new Array(64);
+    const temp1 = new Array(32);
+    const temp2 = new Array(64);
+    const temp3 = new Array(64);
     cpy32(temp1, ORDER);
     cpy32(s, egcd32(temp2, temp3, s, temp1));
     if ((s[31] & 0x80) !== 0) mula_small(s, s, 0, ORDER, 32, 1);
   }
 }
 
-/********* DIGITAL SIGNATURES *********/
+/** ******* DIGITAL SIGNATURES ******** */
 
 /* deterministic EC-KCDSA
  *
@@ -781,18 +783,19 @@ function core(Px, s, k, Gx) {
 
 function sign(h, x, s) {
   // v = (x - h) s  mod q
-  var w, i;
-  var h1 = new Array(32);
-  var x1 = new Array(32);
-  var tmp1 = new Array(64);
-  var tmp2 = new Array(64);
+  let w;
+  let i;
+  const h1 = new Array(32);
+  const x1 = new Array(32);
+  const tmp1 = new Array(64);
+  const tmp2 = new Array(64);
 
   // Don't clobber the arguments, be nice!
   cpy32(h1, h);
   cpy32(x1, x);
 
   // Reduce modulo group order
-  var tmp3 = new Array(32);
+  const tmp3 = new Array(32);
   divmod(tmp3, h1, 32, ORDER, 32);
   divmod(tmp3, x1, 32, ORDER, 32);
 
@@ -800,7 +803,7 @@ function sign(h, x, s) {
   // If v is negative, add the group order to it to become positive.
   // If v was already positive we don't have to worry about overflow
   // when adding the order because v < ORDER and 2*ORDER < 2^256
-  var v = new Array(32);
+  const v = new Array(32);
   mula_small(v, x1, 0, h1, 32, -1);
   mula_small(v, v, 0, ORDER, 32, 1);
 
@@ -821,21 +824,21 @@ function sign(h, x, s) {
  */
 function verify(v, h, P) {
   /* Y = v abs(P) + h G  */
-  var d = new Array(32);
-  var p = [createUnpackedArray(), createUnpackedArray()];
-  var s = [createUnpackedArray(), createUnpackedArray()];
-  var yx = [createUnpackedArray(), createUnpackedArray(), createUnpackedArray()];
-  var yz = [createUnpackedArray(), createUnpackedArray(), createUnpackedArray()];
-  var t1 = [createUnpackedArray(), createUnpackedArray(), createUnpackedArray()];
-  var t2 = [createUnpackedArray(), createUnpackedArray(), createUnpackedArray()];
+  const d = new Array(32);
+  const p = [createUnpackedArray(), createUnpackedArray()];
+  const s = [createUnpackedArray(), createUnpackedArray()];
+  const yx = [createUnpackedArray(), createUnpackedArray(), createUnpackedArray()];
+  const yz = [createUnpackedArray(), createUnpackedArray(), createUnpackedArray()];
+  const t1 = [createUnpackedArray(), createUnpackedArray(), createUnpackedArray()];
+  const t2 = [createUnpackedArray(), createUnpackedArray(), createUnpackedArray()];
 
-  var vi = 0,
-    hi = 0,
-    di = 0,
-    nvh = 0,
-    i,
-    j,
-    k;
+  let vi = 0;
+  let hi = 0;
+  let di = 0;
+  let nvh = 0;
+  let i;
+  let j;
+  let k;
 
   /* set p[0] to G and p[1] to P  */
 
@@ -927,7 +930,7 @@ function verify(v, h, P) {
   recip(t1[0], yz[k], 0);
   mul(t1[1], yx[k], t1[0]);
 
-  var Y = [];
+  const Y = [];
   pack(t1[1], Y);
   return Y;
 }
@@ -941,17 +944,21 @@ function verify(v, h, P) {
  *
  * WARNING: if s is not NULL, this function has data-dependent timing */
 function keygen(k) {
-  var P = [];
-  var s = [];
+  const P = [];
+  const s = [];
   k = k || [];
   clamp(k);
   core(P, s, k, null);
 
-  return { p: P, s: s, k: k };
+  return {
+    p: P,
+    s,
+    k,
+  };
 }
 
 export default {
-  sign: sign,
-  verify: verify,
-  keygen: keygen,
+  sign,
+  verify,
+  keygen,
 };

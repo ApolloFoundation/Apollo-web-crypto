@@ -27,9 +27,8 @@ const writeToFile = (data: Uint8Array | string, fileName: string) => {
   fs.writeFileSync(`${__dirname}/${TEST_DATA_DIR}/out/${fileName}`, data, { encoding: 'binary', flag: 'w' });
 };
 
-const readFromFile = (fileName: string, type: string = 'utf-8') => {
-  return fs.readFileSync(`${__dirname}/${TEST_DATA_DIR}${fileName}`, type);
-};
+const readFromFile = (fileName: string, type: string = 'utf-8') =>
+  fs.readFileSync(`${__dirname}/${TEST_DATA_DIR}${fileName}`, type);
 
 const plainString: string = readFromFile(PLAIN_FILE_TEXT);
 

@@ -133,7 +133,7 @@ export default class Crypto {
     if (!options.sharedKey) {
       sharedKey = this.getSharedSecret(options.privateKey, options.publicKey);
     } else {
-      sharedKey = options.sharedKey.slice(0); //clone
+      sharedKey = options.sharedKey.slice(0); // clone
     }
     if (options.nonce !== undefined) {
       for (let i = 0; i < 32; i++) {
@@ -169,7 +169,7 @@ export default class Crypto {
   }
 
   private static aesDecryptImpl(ivCiphertext: number[], options: any) {
-    if (ivCiphertext.length < 16 || ivCiphertext.length % 16 != 0) {
+    if (ivCiphertext.length < 16 || ivCiphertext.length % 16 !== 0) {
       throw {
         name: 'invalid ciphertext',
       };
@@ -202,9 +202,9 @@ export default class Crypto {
 
     // @ts-ignore
     const encrypted = CryptoJS.lib.CipherParams.create({
-      ciphertext: ciphertext,
-      iv: iv,
-      key: key,
+      ciphertext,
+      iv,
+      key,
     });
 
     const decrypted = CryptoJS.AES.decrypt(encrypted, key, { iv });

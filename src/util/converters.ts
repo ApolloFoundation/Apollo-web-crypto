@@ -16,8 +16,8 @@
 
 // @ts-nocheck
 import * as CryptoJS from 'crypto-js';
-import { BigInteger } from 'jsbn';
 import { WordArray } from 'crypto-js';
+import { BigInteger } from 'jsbn';
 
 const charToNibble = {};
 const nibbleToChar = [];

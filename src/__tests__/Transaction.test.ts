@@ -19,6 +19,7 @@ describe('Transaction Tests', () => {
   });
 
   test('SendMoney with offline signing', async () => {
+    expect.assertions(2);
     const data = {
       requestType: 'sendMoney',
       recipient: 'APL-NZKH-MZRE-2CTT-98NPZ',
@@ -29,8 +30,9 @@ describe('Transaction Tests', () => {
       sender: 3705364957971254799,
       deadline: 1440,
     };
-    const result = await Transaction.sendWithOfflineSign(data);
-    const resultExp = await Transaction.send(data);
-    expect(result.transactionJSON.signature).toEqual(resultExp.transactionJSON.signature);
+    const response = await Transaction.send(data);
+    const { transactionBytes, signature } = Transaction.processOfflineSign(data, response);
+    expect(transactionBytes).toEqual(response.transactionBytes);
+    expect(signature).toEqual(response.transactionJSON.signature);
   });
 });

@@ -197,47 +197,30 @@ describe('Crypto Tests', () => {
   /**
    * Test of aesEncrypt method, of class Crypto.
    */
-  test('AesEncrypt', () => {
-    // const myPrivateKey: string = Crypto.getPrivateKey(secretPhraseA);
-    // const theirPublicKey: string = Crypto.getPublicKey(secretPhraseB);
-    // const sharedKeyBytes: number[] = Crypto.getSharedKey(myPrivateKey, theirPublicKey);
-    // const key: string = converters.byteArrayToHexString(sharedKeyBytes);
-    // const expResult: number[] = converters.stringToByteArray(plainString);
-    // const resultEnc: string = Crypto.aesEncrypt(plainString, key);
-    // const result: object = Crypto.aesDecrypt(resultEnc, key);
-    // expect(result).toEqual(expResult);
-    // writeToFile(resultEnc, OUT_FILE_AES);
-  });
+  // test('AesEncrypt', () => {
+  // const myPrivateKey: string = Crypto.getPrivateKey(secretPhraseA);
+  // const theirPublicKey: string = Crypto.getPublicKey(secretPhraseB);
+  // const sharedKeyBytes: number[] = Crypto.getSharedKey(myPrivateKey, theirPublicKey);
+  // const key: string = converters.byteArrayToHexString(sharedKeyBytes);
+  // const expResult: number[] = converters.stringToByteArray(plainString);
+  // const resultEnc: string = Crypto.aesEncrypt(plainString, key);
+  // const result: object = Crypto.aesDecrypt(resultEnc, key);
+  // expect(result).toEqual(expResult);
+  // writeToFile(resultEnc, OUT_FILE_AES);
+  // });
 
   /**
    * Test of aesGCMEncrypt method, of class Crypto.
    */
-  test('AesGCMEncrypt', () => {
-    // const myPrivateKey: string = Crypto.getPrivateKey(secretPhraseA);
-    // const theirPublicKey: string = Crypto.getPublicKey(secretPhraseB);
-    // const sharedKeyBytes: number[] = Crypto.getSharedKey(myPrivateKey, theirPublicKey);
-    // const key: string = converters.byteArrayToHexString(sharedKeyBytes);
-    // const expResult: number[] = converters.stringToByteArray(plainString);
-    // const resultEnc: string = Crypto.aesGCMEncrypt(plainString, key);
-    // const result: object = Crypto.aesGCMDecrypt(resultEnc, key);
-    // expect(result).toEqual(expResult);
-    // writeToFile(resultEnc, OUT_FILE_AES_GCM);
-  });
-
-  /**
-   * Test of rsEncode method, of class Crypto.
-   */
-  test('RsEncode', () => {});
-
-  /**
-   * Test of rsDecode method, of class Crypto.
-   */
-  test('RsDecode', () => {});
-
-  /**
-   * Test of elGamalDecrypt method, of class Crypto.
-   */
-  test('ElGamalDecrypt', () => {
-    // TODO:  test by encrypt and then decript plain_data
-  });
+  // test('AesGCMEncrypt', () => {
+  // const myPrivateKey: string = Crypto.getPrivateKey(secretPhraseA);
+  // const theirPublicKey: string = Crypto.getPublicKey(secretPhraseB);
+  // const sharedKeyBytes: number[] = Crypto.getSharedKey(myPrivateKey, theirPublicKey);
+  // const key: string = converters.byteArrayToHexString(sharedKeyBytes);
+  // const expResult: number[] = converters.stringToByteArray(plainString);
+  // const resultEnc: string = Crypto.aesGCMEncrypt(plainString, key);
+  // const result: object = Crypto.aesGCMDecrypt(resultEnc, key);
+  // expect(result).toEqual(expResult);
+  // writeToFile(resultEnc, OUT_FILE_AES_GCM);
+  // });
 });

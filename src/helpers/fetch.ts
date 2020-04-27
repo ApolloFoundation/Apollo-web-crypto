@@ -4,7 +4,7 @@ export const GET = 'GET';
 export const POST = 'POST';
 
 export const handleFetch = async (url: string, method: string, value?: any) => {
-  let queryPath: string = `${process.env.APL_SERVER || 'http://localhost:7876'}${url}`;
+  let queryPath: string = (process.env.APL_SERVER || process.env.REACT_APP_APL_SERVER || '/') + url;
   const options: any = {
     method,
     headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },

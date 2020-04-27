@@ -2,14 +2,15 @@
   "name": "apl-web-crypto",
   "version": "1.0.0",
   "description": "JS implementation of APL Crypto",
-  "private": true,
+  "private": false,
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
     "test": "jest --config jestconfig.json",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "tslint -p tsconfig.json",
     "build": "tsc",
-    "prepublishOnly": "yarn test && yarn lint",
-    "preversion": "yarn lint",
+    "prepublishOnly": "yarn test",
     "version": "yarn format && git add -A src",
     "postversion": "git push && git push --tags"
   },

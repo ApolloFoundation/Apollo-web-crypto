@@ -4,8 +4,10 @@ import curve25519 from './helpers/curve25519';
 import curve25519_ from './helpers/curve25519_';
 import converters from './util/converters';
 const pako = require('pako');
-const NodeCrypto = require('node-webcrypto-ossl');
-const crypto = new NodeCrypto.Crypto();
+if (typeof window === 'undefined') {
+  const NodeCrypto = require('node-webcrypto-ossl');
+  const crypto = new NodeCrypto.Crypto();
+}
 
 export default class Crypto {
   public static signBytes(messageBytes: number[], secretPhrase: string | number[]): string {

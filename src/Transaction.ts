@@ -8,15 +8,14 @@ export default class Transaction {
     if (!dataObj.requestType) {
       throw new Error('Undefined request type');
     }
-    if (!dataObj.secretPhrase) {
-      throw new Error('Passphrase required field');
-    }
-    dataObj.publicKey = Crypto.getPublicKey(dataObj.secretPhrase);
     const data = Object.assign({}, dataObj);
-    if (data.doNotSign) {
-      delete data.secretPhrase;
-    } else {
-      data.secretPhrase = await ElGamalEncryption.process(data.secretPhrase);
+    if (data.secretPhrase) {
+      data.publicKey = Crypto.getPublicKey(data.secretPhrase);
+      if (data.doNotSign) {
+        delete data.secretPhrase;
+      } else {
+        data.secretPhrase = await ElGamalEncryption.process(data.secretPhrase);
+      }
     }
     return handleFetch(`/apl?requestType=${dataObj.requestType}`, POST, data);
   }
@@ -34,8 +33,8 @@ export default class Transaction {
     const response = await Transaction.sendNotSign(data);
     const { transactionBytes, signature } = this.processOfflineSign(data, response);
     return {
-      ...response,
       transactionBytes,
+      unsignedTransactionBytes: response.unsignedTransactionBytes,
       transactionJSON: {
         ...response.transactionJSON,
         signature,

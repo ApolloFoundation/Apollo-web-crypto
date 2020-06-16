@@ -1,6 +1,6 @@
 {
   "name": "apl-web-crypto",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "JS implementation of APL Crypto",
   "private": false,
   "main": "lib/index.js",
@@ -45,7 +45,6 @@
     "isomorphic-fetch": "2.2.1",
     "js-sha256": "0.9.0",
     "jsbn": "1.1.0",
-    "node-webcrypto-ossl": "2.0.6",
     "pako": "1.0.11",
     "pvutils": "1.0.17"
   },

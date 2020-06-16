@@ -4,10 +4,6 @@ import curve25519 from './helpers/curve25519';
 import curve25519_ from './helpers/curve25519_';
 import converters from './util/converters';
 const pako = require('pako');
-if (typeof window === 'undefined') {
-  const NodeCrypto = require('node-webcrypto-ossl');
-  const crypto = new NodeCrypto.Crypto();
-}
 
 export default class Crypto {
   public static signBytes(messageBytes: number[], secretPhrase: string | number[]): string {
@@ -127,7 +123,7 @@ export default class Crypto {
 
   private static aesEncryptImpl(payload: number[], options: any): number[] {
     const ivBytes = new Uint32Array(16);
-    crypto.getRandomValues(ivBytes);
+    window.crypto.getRandomValues(ivBytes);
 
     // CryptoJS likes WordArray parameters
     const wordArrayPayload: any = converters.byteArrayToWordArray(payload);

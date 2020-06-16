@@ -47,8 +47,8 @@ describe('Transaction Tests', () => {
     const response = await Transaction.sendWithOfflineSign(data);
     const dataTransaction = {
       requestType: 'broadcastTransaction',
-      transactionJSON: JSON.stringify(response.transactionJSON),
-      // transactionBytes: response.transactionBytes,
+      // transactionJSON: JSON.stringify(response.transactionJSON),
+      transactionBytes: response.transactionBytes,
     }
     const responseTransaction = await Transaction.send(dataTransaction);
     expect(responseTransaction.transaction).not.toBeUndefined();

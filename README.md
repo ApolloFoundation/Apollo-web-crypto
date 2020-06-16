@@ -36,3 +36,22 @@ Our `preversion`, `version`, and `postversion` will run, create a new tag in git
 npm publish --access=public
 </pre>
 And now you have a new version.
+
+
+# Reed-Solomon Encryption
+
+###Implementation
+
+To use the Reed-Solomon encryption, the corresponding cryptographic module can be used. To  set it up, the following steps  should be taken:
+    
+   1. Import Reed-Solomon encryption functions from  the initial code:
+      `import {processAccountIDtoRS, processAccountRStoID} from 'apl-web-crypto';`
+
+   2. Usage:
+   
+        `const accountRS = processAccountIDtoRS(accountID)`, 
+        where `accountID` is user's account id. This function will return account RS value like APL-XXXX-XXXX-XXXX-XXXXX
+        
+        `const accountID = processAccountRStoID(accountRS)`,
+        where `accountRS` is user's account like APL-XXXX-XXXX-XXXX-XXXXX. This function will return account id.
+

@@ -1,4 +1,3 @@
-import Transaction from '../Transaction';
 import ElGamalEncryption from '../ElGamalEncryption';
 
 describe('ElGamal Tests', () => {

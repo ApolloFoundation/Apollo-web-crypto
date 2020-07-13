@@ -1,4 +1,4 @@
-import 'isomorphic-fetch';
+import fetch from 'isomorphic-fetch';
 
 export const GET = 'GET';
 export const POST = 'POST';

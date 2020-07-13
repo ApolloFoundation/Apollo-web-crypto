@@ -123,7 +123,7 @@ describe('Crypto Tests', () => {
   test('Sign byteArr-String', () => {
     // for unsignedTransactionBytes (already hex string) need converters.hexStringToByteArray
     const message: number[] = converters.stringToByteArray(plainString);
-    const result: string = Crypto.signBytes(message, secretPhraseA);
+    const result: string = Crypto.signHash(message, secretPhraseA);
     const expResult =
       'f565212c53a668006fbdb12c512e51f7add8118e6573d5c7261e9f58944e5c0b0ae76275210b795915a3017852fe8bca1a3cd2d2b02b32a51e0e03b18e6335f8';
     expect(result).toEqual(expResult);
@@ -138,7 +138,7 @@ describe('Crypto Tests', () => {
     const message: number[] = converters.stringToByteArray(plainString);
     const secretPhraseBytes: number[] = converters.stringToHexStringToByteArray(secretPhraseA);
     const keySeed: number[] = Crypto.simpleHash(secretPhraseBytes);
-    const result: string = Crypto.signBytes(message, keySeed);
+    const result: string = Crypto.signHash(message, keySeed);
     const expResult =
       'f565212c53a668006fbdb12c512e51f7add8118e6573d5c7261e9f58944e5c0b0ae76275210b795915a3017852fe8bca1a3cd2d2b02b32a51e0e03b18e6335f8';
     expect(result).toEqual(expResult);

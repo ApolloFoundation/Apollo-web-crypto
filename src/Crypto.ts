@@ -6,7 +6,7 @@ import converters from './util/converters';
 const pako = require('pako');
 
 export default class Crypto {
-  public static signBytes(messageBytes: number[], secretPhrase: string | number[]): string {
+  public static signBytes(messageBytes: number[] | Uint8Array, secretPhrase: string | number[]) {
     if (!secretPhrase) {
       throw new Error('Signing passphrase required');
     }
@@ -21,10 +21,14 @@ export default class Crypto {
     const h: number[] = this.simpleHash(m, y);
     const v: number[] | undefined = curve25519.sign(h, x, s);
     if (v) {
-      return converters.byteArrayToHexString(v.concat(h));
+      return new Uint8Array(v.concat(h));
     } else {
       throw new Error('Signing error');
     }
+  }
+  public static signHash(messageBytes: number[] | Uint8Array, secretPhrase: string | number[]) {
+    const signBytes = this.signBytes(messageBytes, secretPhrase);
+    return converters.byteArrayToHexString(signBytes);
   }
 
   public static verifySignature(signature: string, message: string, publicKey: string): boolean {
@@ -39,7 +43,7 @@ export default class Crypto {
     return this.areByteArraysEqual(h, h2);
   }
 
-  public static simpleHash(b1: string | number[], ...nonces: any[]): number[] {
+  public static simpleHash(b1: string | number[] | Uint8Array, ...nonces: any[]): number[] {
     if (typeof b1 === 'string') {
       b1 = converters.stringToByteArray(b1);
     }
@@ -122,9 +126,6 @@ export default class Crypto {
   }
 
   private static aesEncryptImpl(payload: number[], options: any): number[] {
-    const ivBytes = new Uint32Array(16);
-    window.crypto.getRandomValues(ivBytes);
-
     // CryptoJS likes WordArray parameters
     const wordArrayPayload: any = converters.byteArrayToWordArray(payload);
     let sharedKey;
@@ -140,7 +141,7 @@ export default class Crypto {
     }
     const sharedKeyFormated: any = converters.byteArrayToWordArray(sharedKey);
     const key = CryptoJS.SHA256(sharedKeyFormated);
-    const ivFormated: any = converters.byteArrayToWordArray(ivBytes);
+    const ivFormated: any = CryptoJS.lib.WordArray.random(16);
     const encrypted = CryptoJS.AES.encrypt(wordArrayPayload, key, { iv: ivFormated });
     const ivOut = converters.wordArrayToByteArray(encrypted.iv);
     const ciphertextOut = converters.wordArrayToByteArray(encrypted.ciphertext);

@@ -75,26 +75,41 @@ export default class Transaction {
       const typeBuf = Buffer.allocUnsafe(1);
       const subtypeBuf = Buffer.allocUnsafe(1);
       const flagsBuf = Buffer.allocUnsafe(4);
+      let appendix = Buffer.allocUnsafe(0);
       switch (requestType) {
         case 'sendMoney':
           typeBuf.writeUIntLE(TransactionType.TYPE_PAYMENT, 0, 1);
           subtypeBuf.writeUIntLE(0x10, 0, 1);
           if (isAppendix) {
             flagsBuf.writeUIntLE(0x01, 0, 4);
+            // appendix = Buffer.allocUnsafe(4);
+            // appendix.writeUIntLE(0, 0, 4);
+            // appendix.writeUIntLE(0, 4, data.appendix);
           } else {
             flagsBuf.writeUIntLE(0x0, 0, 4);
           }
           break;
         case 'childAccount':
-          typeBuf.writeUIntLE(TransactionType.TYPE_CHILD_ACCOUNT, 0, 1);
-          subtypeBuf.writeUIntLE(TransactionType.SUBTYPE_CHILD_CREATE, 0, 1);
+          typeBuf.writeUInt8(TransactionType.TYPE_CHILD_ACCOUNT, 0);
+          subtypeBuf.writeUInt8(0x10, 0);
           flagsBuf.writeUIntLE(0x0, 0, 4);
+          if (data.publicKeys) {
+            const childCountLength = data.publicKeys.length
+            appendix = Buffer.alloc(4 + childCountLength * 32);
+            appendix.writeUInt8(1, 0)
+            appendix.writeUInt8(1, 1)
+            appendix.writeUIntLE(childCountLength, 2, 2);
+            data.publicKeys.map((child: string, i: number) => {
+              appendix.write(child, 4 + i * 32, 32)
+            })
+          }
           break;
       }
       return {
         type: typeBuf,
         subtype: subtypeBuf,
         flags: flagsBuf,
+        appendix,
       };
     };
     const getTimestamp = (value: number) => {
@@ -121,46 +136,35 @@ export default class Transaction {
     const blockchainResult = await getBlockchain();
 
     if (blockchainResult && !blockchainResult.errorCode) {
-      const { type, subtype, flags } = getType(data.requestType);
+      const { type, subtype, flags, appendix } = getType(data.requestType);
       const timestamp = getTimestamp(blockchainResult.txTimestamp);
       const deadline = bytesValue(data.deadline, 2);
       const senderPublicKey = getKey(data.secretPhrase);
       const recipientId = getRecipient(data.recipient);
       const amountATM = bytesValue(data.amountATM);
       const feeATM = bytesValue(data.feeATM);
-      const referencedTransactionFullHash = new Uint8Array(32);
-      let signature = Buffer.allocUnsafe(64);
+      const referencedTransactionFullHash = Buffer.alloc(32);
+      let signature = Buffer.alloc(64);
       const ecBlockHeight = bytesValue(blockchainResult.ecBlockHeight, 4);
       const ecBlockId = bytesValue(blockchainResult.ecBlockId);
 
-      const unsignedTransactionBytes = Buffer.allocUnsafe(176);
-      let offset = 0;
-      unsignedTransactionBytes.set(type, offset);
-      offset += type.length;
-      unsignedTransactionBytes.set(subtype, offset);
-      offset += subtype.length;
-      unsignedTransactionBytes.set(timestamp, offset);
-      offset += timestamp.length;
-      unsignedTransactionBytes.set(deadline, offset);
-      offset += deadline.length;
-      unsignedTransactionBytes.set(senderPublicKey, offset);
-      offset += senderPublicKey.length;
-      unsignedTransactionBytes.set(recipientId, offset);
-      offset += recipientId.length;
-      unsignedTransactionBytes.set(amountATM, offset);
-      offset += amountATM.length;
-      unsignedTransactionBytes.set(feeATM, offset);
-      offset += feeATM.length;
-      unsignedTransactionBytes.set(referencedTransactionFullHash, offset);
-      offset += referencedTransactionFullHash.length;
-      unsignedTransactionBytes.set(signature, offset);
-      offset += signature.length;
-      unsignedTransactionBytes.set(flags, offset);
-      offset += flags.length;
-      unsignedTransactionBytes.set(ecBlockHeight, offset);
-      offset += ecBlockHeight.length;
-      unsignedTransactionBytes.set(ecBlockId, offset);
-      offset += ecBlockId.length;
+      const totalLength = 176 + appendix.length
+      const unsignedTransactionBytes = Buffer.concat([
+        type,
+        subtype,
+        timestamp,
+        deadline,
+        senderPublicKey,
+        recipientId,
+        amountATM,
+        feeATM,
+        referencedTransactionFullHash,
+        signature,
+        flags,
+        ecBlockHeight,
+        ecBlockId,
+        appendix,
+      ], totalLength);
 
       const signatureUint8Arr = Crypto.signBytes(unsignedTransactionBytes, data.secretPhrase);
       signature = Buffer.from(signatureUint8Arr);

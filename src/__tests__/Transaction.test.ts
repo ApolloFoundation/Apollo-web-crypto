@@ -51,34 +51,47 @@ describe('Transaction Tests', () => {
       requestType: 'broadcastTransaction',
       // transactionJSON: JSON.stringify(response.transactionJSON),
       transactionBytes: response.transactionBytes,
-    }
+    };
     const responseTransaction = await Transaction.send(dataTransaction);
     expect(responseTransaction.transaction).not.toBeUndefined();
   });
 
-  test('Create transactionBytes sendMoney', async () => {
-    try {
-      const data = {
-        requestType: 'sendMoney',
-        recipient: 'APL-NZKH-MZRE-2CTT-98NPZ',
-        amountATM: "3000000000",
-        feeATM: "100000000",
-        secretPhrase: '0',
-        sender: 3705364957971254799,
-        deadline: 1440,
-      };
-      const resultTransactionBytes = await Transaction.generateTransactionBytes(data);
-      // const {transactionBytes} = await Transaction.sendWithOfflineSign(data);
-      // const resultTB = converters.hexStringToByteArray(resultTransactionBytes)
-      // const resTB = converters.hexStringToByteArray(transactionBytes)
-      const dataTransaction = {
-        requestType: 'broadcastTransaction',
-        transactionBytes: resultTransactionBytes,
-      }
-      const responseTransaction = await Transaction.send(dataTransaction);
-      expect(responseTransaction.transaction).not.toBeUndefined();
-    } catch (e) {
-      console.log(e)
-    }
+  test('Create transactionBytes for send money', async () => {
+    const data = {
+      requestType: 'sendMoney',
+      recipient: 'APL-NZKH-MZRE-2CTT-98NPZ',
+      amountATM: '3000000000',
+      feeATM: '0',
+      secretPhrase: '0',
+      sender: 3705364957971254799,
+      deadline: 1440,
+    };
+    const resultTransactionBytes = await Transaction.generateTransactionBytes(data);
+    const dataTransaction = {
+      requestType: 'broadcastTransaction',
+      transactionBytes: resultTransactionBytes,
+    };
+    const responseTransaction = await Transaction.send(dataTransaction);
+    expect(responseTransaction.transaction).not.toBeUndefined();
+  });
+
+  test('Create transactionBytes for create the child account ', async () => {
+    const data = {
+      requestType: 'childAccount',
+      recipient: 'APL-NZKH-MZRE-2CTT-98NPZ',
+      amountATM: '0',
+      feeATM: '0',
+      secretPhrase: '0',
+      sender: 3705364957971254799,
+      deadline: 1440,
+      publicKeys: ['b0f12497c84af1ac2603f97d1fb804fc308e241d522fa5d21e900facbb92d6ee'],
+    };
+    const resultTransactionBytes = await Transaction.generateTransactionBytes(data);
+    const dataTransaction = {
+      requestType: 'broadcastTransaction',
+      transactionBytes: resultTransactionBytes,
+    };
+    const responseTransaction = await Transaction.send(dataTransaction);
+    expect(responseTransaction.transaction).not.toBeUndefined();
   });
 });

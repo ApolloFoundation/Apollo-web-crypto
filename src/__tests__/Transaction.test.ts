@@ -73,15 +73,19 @@ describe('Transaction Tests', () => {
       transactionBytes: resultTransactionBytes,
     };
     const responseTransaction = await Transaction.send(dataTransaction);
-    expect(responseTransaction.transaction).not.toBeUndefined();
+    if (!responseTransaction.errorCode) {
+      expect(responseTransaction.transaction).not.toBeUndefined();
+    } else {
+      throw new Error(responseTransaction.errorDescription);
+    }
   });
 
   test('Create transactionBytes for create the child account ', async () => {
     const data = {
       requestType: 'childAccount',
       recipient: 'APL-NZKH-MZRE-2CTT-98NPZ',
-      amountATM: '0',
-      feeATM: '0',
+      amountATM: 0,
+      feeATM: 0,
       secretPhrase: '0',
       sender: 3705364957971254799,
       deadline: 1440,
@@ -93,6 +97,10 @@ describe('Transaction Tests', () => {
       transactionBytes: resultTransactionBytes,
     };
     const responseTransaction = await Transaction.send(dataTransaction);
-    expect(responseTransaction.transaction).not.toBeUndefined();
+    if (!responseTransaction.errorCode) {
+      expect(responseTransaction.transaction).not.toBeUndefined();
+    } else {
+      throw new Error(responseTransaction.errorDescription);
+    }
   });
 });

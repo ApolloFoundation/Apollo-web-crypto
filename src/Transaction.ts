@@ -67,8 +67,8 @@ export default class Transaction {
   public static async generateTransactionBytes(data: any): Promise<any> {
     const bytesValue = (value: number, bytes: number = 8) => {
       const resBuff = Buffer.alloc(8);
-      const amountBigInt = BigInt(value);
-      resBuff.writeBigUInt64LE(amountBigInt, 0);
+      const valueBigInt = BigInt(value);
+      resBuff.writeBigUInt64LE(valueBigInt, 0);
       return resBuff.slice(0, bytes);
     };
     const getType = (requestType: string): any => {

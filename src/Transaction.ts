@@ -129,10 +129,12 @@ export default class Transaction {
       return Buffer.from(secretPhraseBytes);
     };
     const getRecipient = (recipient: string) => {
-      const recipientID: string = ReedSolomonDecode(recipient);
-      const bigIntRes = BigInt(recipientID);
       const resBuff = Buffer.alloc(8);
-      resBuff.writeBigUInt64LE(bigIntRes, 0);
+      if (recipient && recipient.length > 0) {
+        const recipientID: string = ReedSolomonDecode(recipient);
+        const bigIntRes = BigInt(recipientID);
+        resBuff.writeBigUInt64LE(bigIntRes, 0);
+      }
       return resBuff;
     };
     const getBlockchain = async () => {

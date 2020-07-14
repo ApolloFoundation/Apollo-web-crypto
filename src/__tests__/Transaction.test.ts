@@ -83,7 +83,7 @@ describe('Transaction Tests', () => {
   test('Create transactionBytes for create the child account ', async () => {
     const data = {
       requestType: 'childAccount',
-      recipient: 'APL-NZKH-MZRE-2CTT-98NPZ',
+      recipient: '',
       amountATM: 0,
       feeATM: 0,
       secretPhrase: '0',

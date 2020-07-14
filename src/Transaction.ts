@@ -64,6 +64,10 @@ export default class Transaction {
     return;
   }
 
+  /**
+   * Generate Transaction Structure
+   * @documentation https://firstb.atlassian.net/wiki/spaces/APOLLO/pages/1250000936/Apollo+Transactions
+   */
   public static async generateTransactionBytes(data: any): Promise<any> {
     const bytesValue = (value: number, bytes: number = 8) => {
       const resBuff = Buffer.alloc(8);

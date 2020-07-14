@@ -7,4 +7,4 @@ export const TransactionType = {
 
   SUBTYPE_CHILD_CREATE: 0,
   SUBTYPE_CHILD_CONVERT_TO: 1,
-}
+};

@@ -86,11 +86,11 @@ export default class Transaction {
           subtypeBuf.writeUInt8(0x10, 0);
           if (data.attachment) {
             flagsBuf.writeUIntLE(0x01, 0, 4);
-            const attachmentLength = data.attachment.length
+            const attachmentLength = data.attachment.length;
             appendix = Buffer.alloc(5 + attachmentLength);
-            appendix.writeUInt8(0, 0) // version
+            appendix.writeUInt8(0, 0); // version
             appendix.writeUIntLE(attachmentLength, 1, 4); // the payload length
-            appendix.write(data.attachment, 5, attachmentLength) // the byte array of payload
+            appendix.write(data.attachment, 5, attachmentLength); // the byte array of payload
           } else {
             flagsBuf.writeUIntLE(0x0, 0, 4);
           }
@@ -100,14 +100,14 @@ export default class Transaction {
           subtypeBuf.writeUInt8(0x10, 0);
           flagsBuf.writeUIntLE(0x0, 0, 4);
           if (data.publicKeys) {
-            const childCountLength = data.publicKeys.length
+            const childCountLength = data.publicKeys.length;
             appendix = Buffer.alloc(4 + childCountLength * 32);
-            appendix.writeUInt8(1, 0) // version
-            appendix.writeUInt8(1, 1) // the Address Scope: 0-External, 1-InFamily, 2-Custom
+            appendix.writeUInt8(1, 0); // version
+            appendix.writeUInt8(1, 1); // the Address Scope: 0-External, 1-InFamily, 2-Custom
             appendix.writeUIntLE(childCountLength, 2, 2); // the child count, number of the public key array items
             data.publicKeys.map((child: string, i: number) => {
-              appendix.write(child, 4 + i * 32, 32)
-            })
+              appendix.write(child, 4 + i * 32, 32);
+            });
           }
           break;
       }
@@ -130,7 +130,7 @@ export default class Transaction {
     };
     const getRecipient = (recipient: string) => {
       const recipientID: string = ReedSolomonDecode(recipient);
-      const bigIntRes = BigInt((recipientID));
+      const bigIntRes = BigInt(recipientID);
       const resBuff = Buffer.alloc(8);
       resBuff.writeBigUInt64LE(bigIntRes, 0);
       return resBuff;
@@ -154,23 +154,26 @@ export default class Transaction {
       const ecBlockHeight = bytesValue(blockchainResult.ecBlockHeight, 4);
       const ecBlockId = bytesValue(blockchainResult.ecBlockId);
 
-      const totalLength = 176 + appendix.length
-      const unsignedTransactionBytes = Buffer.concat([
-        type,
-        subtype,
-        timestamp,
-        deadline,
-        senderPublicKey,
-        recipientId,
-        amountATM,
-        feeATM,
-        referencedTransactionFullHash,
-        signature,
-        flags,
-        ecBlockHeight,
-        ecBlockId,
-        appendix,
-      ], totalLength);
+      const totalLength = 176 + appendix.length;
+      const unsignedTransactionBytes = Buffer.concat(
+        [
+          type,
+          subtype,
+          timestamp,
+          deadline,
+          senderPublicKey,
+          recipientId,
+          amountATM,
+          feeATM,
+          referencedTransactionFullHash,
+          signature,
+          flags,
+          ecBlockHeight,
+          ecBlockId,
+          appendix,
+        ],
+        totalLength,
+      );
 
       const signatureUint8Arr = Crypto.signBytes(unsignedTransactionBytes, data.secretPhrase);
       signature = Buffer.from(signatureUint8Arr);

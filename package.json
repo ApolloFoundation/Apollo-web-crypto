@@ -10,7 +10,7 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "tslint -p tsconfig.json",
     "build": "tsc",
-    "prepublishOnly": "yarn test",
+    "prepublishOnly": "yarn test && yarn build",
     "version": "yarn format && git add -A src",
     "postversion": "git push && git push --tags"
   },

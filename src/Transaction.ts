@@ -66,25 +66,27 @@ export default class Transaction {
 
   public static async generateTransactionBytes(data: any): Promise<any> {
     const bytesValue = (value: number, bytes: number = 8) => {
-      const resBuff = Buffer.allocUnsafe(8);
+      const resBuff = Buffer.alloc(8);
       const amountBigInt = BigInt(value);
       resBuff.writeBigUInt64LE(amountBigInt, 0);
       return resBuff.slice(0, bytes);
     };
-    const getType = (requestType: string, isAppendix: boolean = false): any => {
-      const typeBuf = Buffer.allocUnsafe(1);
-      const subtypeBuf = Buffer.allocUnsafe(1);
-      const flagsBuf = Buffer.allocUnsafe(4);
-      let appendix = Buffer.allocUnsafe(0);
+    const getType = (requestType: string): any => {
+      const typeBuf = Buffer.alloc(1);
+      const subtypeBuf = Buffer.alloc(1);
+      const flagsBuf = Buffer.alloc(4);
+      let appendix = Buffer.alloc(0);
       switch (requestType) {
         case 'sendMoney':
-          typeBuf.writeUIntLE(TransactionType.TYPE_PAYMENT, 0, 1);
-          subtypeBuf.writeUIntLE(0x10, 0, 1);
-          if (isAppendix) {
+          typeBuf.writeUInt8(TransactionType.TYPE_PAYMENT, 0);
+          subtypeBuf.writeUInt8(0x10, 0);
+          if (data.attachment) {
             flagsBuf.writeUIntLE(0x01, 0, 4);
-            // appendix = Buffer.allocUnsafe(4);
-            // appendix.writeUIntLE(0, 0, 4);
-            // appendix.writeUIntLE(0, 4, data.appendix);
+            const attachmentLength = data.attachment.length
+            appendix = Buffer.alloc(5 + attachmentLength);
+            appendix.writeUInt8(0, 0) // version
+            appendix.writeUIntLE(attachmentLength, 1, 4); // the payload length
+            appendix.write(data.attachment, 5, attachmentLength) // the byte array of payload
           } else {
             flagsBuf.writeUIntLE(0x0, 0, 4);
           }
@@ -96,9 +98,9 @@ export default class Transaction {
           if (data.publicKeys) {
             const childCountLength = data.publicKeys.length
             appendix = Buffer.alloc(4 + childCountLength * 32);
-            appendix.writeUInt8(1, 0)
-            appendix.writeUInt8(1, 1)
-            appendix.writeUIntLE(childCountLength, 2, 2);
+            appendix.writeUInt8(1, 0) // version
+            appendix.writeUInt8(1, 1) // the Address Scope: 0-External, 1-InFamily, 2-Custom
+            appendix.writeUIntLE(childCountLength, 2, 2); // the child count, number of the public key array items
             data.publicKeys.map((child: string, i: number) => {
               appendix.write(child, 4 + i * 32, 32)
             })
@@ -113,7 +115,7 @@ export default class Transaction {
       };
     };
     const getTimestamp = (value: number) => {
-      const timestampBuf = Buffer.allocUnsafe(4);
+      const timestampBuf = Buffer.alloc(4);
       timestampBuf.writeUIntLE(value, 0, 4);
       return timestampBuf;
     };
@@ -125,7 +127,7 @@ export default class Transaction {
     const getRecipient = (recipient: string) => {
       const recipientID: string = ReedSolomonDecode(recipient);
       const bigIntRes = BigInt((recipientID));
-      const resBuff = Buffer.allocUnsafe(8);
+      const resBuff = Buffer.alloc(8);
       resBuff.writeBigUInt64LE(bigIntRes, 0);
       return resBuff;
     };

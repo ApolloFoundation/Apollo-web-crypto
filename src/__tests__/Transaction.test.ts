@@ -60,11 +60,12 @@ describe('Transaction Tests', () => {
     const data = {
       requestType: 'sendMoney',
       recipient: 'APL-NZKH-MZRE-2CTT-98NPZ',
-      amountATM: '3000000000',
-      feeATM: '0',
+      amountATM: 3000000000,
+      feeATM: 100000000,
       secretPhrase: '0',
       sender: 3705364957971254799,
       deadline: 1440,
+      attachment: 'Text in attachment',
     };
     const resultTransactionBytes = await Transaction.generateTransactionBytes(data);
     const dataTransaction = {

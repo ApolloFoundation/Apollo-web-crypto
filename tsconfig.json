@@ -2,9 +2,9 @@
   "compilerOptions": {
     "target": "es6",
     "module": "commonjs",
-    "lib": ["es6"],
+    "lib": ["es6", "dom"],
     "allowJs": true,
-    "outDir": "build",
+    "outDir": "./lib",
     "rootDir": "./src",
     "strict": true,
     "noImplicitAny": true,
@@ -16,5 +16,6 @@
     "removeComments": false,
     "typeRoots": ["node_modules/@types"]
   },
-  "include": ["src/**/*", "src/config/*.json", "src/config/db/*.json"]
+  "include": ["src"],
+  "exclude": ["node_modules", "**/__tests__/*"]
 }

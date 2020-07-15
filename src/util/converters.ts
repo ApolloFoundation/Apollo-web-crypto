@@ -103,9 +103,7 @@ export default {
     value += bytes[index + 3] << 24;
     return value;
   },
-  byteArrayToBigInteger(bytes, opt_startIndex) {
-    const index = this.checkBytesToIntInput(bytes, 8, opt_startIndex);
-
+  byteArrayToBigInteger(bytes, optStartIndex: number = 0) {
     let value = new BigInteger('0', 10);
 
     let temp1;
@@ -113,7 +111,7 @@ export default {
 
     for (let i = 7; i >= 0; i--) {
       temp1 = value.multiply(new BigInteger('256', 10));
-      temp2 = temp1.add(new BigInteger(bytes[opt_startIndex + i].toString(10), 10));
+      temp2 = temp1.add(new BigInteger(bytes[optStartIndex + i].toString(10), 10));
       value = temp2;
     }
 

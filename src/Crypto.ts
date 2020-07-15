@@ -1,9 +1,13 @@
 import * as CryptoJS from 'crypto-js';
 import { WordArray } from 'crypto-js';
+
+const pako = require('pako');
+const crypto = require('crypto');
 import curve25519 from './helpers/curve25519';
 import curve25519_ from './helpers/curve25519_';
 import converters from './util/converters';
-const pako = require('pako');
+import { words } from './constants/random-words';
+import { ReedSolomonEncode } from './ReedSolomon';
 
 export default class Crypto {
   public static signBytes(messageBytes: number[] | Uint8Array, secretPhrase: string | number[]) {
@@ -26,6 +30,7 @@ export default class Crypto {
       throw new Error('Signing error');
     }
   }
+
   public static signHash(messageBytes: number[] | Uint8Array, secretPhrase: string | number[]) {
     const signBytes = this.signBytes(messageBytes, secretPhrase);
     return converters.byteArrayToHexString(signBytes);
@@ -79,6 +84,19 @@ export default class Crypto {
     return this.sharedSecretToSharedKey(sharedSecret, nonce);
   }
 
+  public static getAccountIdFromPublicKey(publicKey: string, isRsFt: boolean): string {
+    const hex = converters.hexStringToByteArray(publicKey);
+    let account: any = this.simpleHash(hex);
+    account = converters.byteArrayToHexString(account);
+    const slice = (converters.hexStringToByteArray(account)).slice(0, 8);
+    const accountId = converters.byteArrayToBigInteger(slice).toString();
+    if (isRsFt) {
+      return ReedSolomonEncode(accountId);
+    } else {
+      return accountId;
+    }
+  }
+
   public static sharedSecretToSharedKey(sharedSecret: number[], nonce?: number[]): number[] {
     if (nonce) {
       for (let i = 0; i < 32; i++) {
@@ -126,6 +144,9 @@ export default class Crypto {
   }
 
   private static aesEncryptImpl(payload: number[], options: any): number[] {
+    const ivBytes = new Uint32Array(16);
+    crypto.randomFillSync(ivBytes);
+
     // CryptoJS likes WordArray parameters
     const wordArrayPayload: any = converters.byteArrayToWordArray(payload);
     let sharedKey;
@@ -141,7 +162,7 @@ export default class Crypto {
     }
     const sharedKeyFormated: any = converters.byteArrayToWordArray(sharedKey);
     const key = CryptoJS.SHA256(sharedKeyFormated);
-    const ivFormated: any = CryptoJS.lib.WordArray.random(16);
+    const ivFormated: any = converters.byteArrayToWordArray(ivBytes);
     const encrypted = CryptoJS.AES.encrypt(wordArrayPayload, key, { iv: ivFormated });
     const ivOut = converters.wordArrayToByteArray(encrypted.iv);
     const ciphertextOut = converters.wordArrayToByteArray(encrypted.ciphertext);
@@ -164,7 +185,7 @@ export default class Crypto {
     } else {
       message = converters.byteArrayToHexString(binData);
     }
-    return { message: message, sharedKey: converters.byteArrayToHexString(result.sharedKey) };
+    return { message, sharedKey: converters.byteArrayToHexString(result.sharedKey) };
   }
 
   private static aesDecryptImpl(ivCiphertext: number[], options: any) {
@@ -185,7 +206,7 @@ export default class Crypto {
     if (!options.sharedKey) {
       sharedKey = this.getSharedSecret(options.privateKey, options.publicKey);
     } else {
-      sharedKey = options.sharedKey.slice(0); //clone
+      sharedKey = options.sharedKey.slice(0); // clone
     }
 
     let key: WordArray;
@@ -212,5 +233,27 @@ export default class Crypto {
       decrypted: converters.wordArrayToByteArray(decrypted),
       sharedKey: converters.wordArrayToByteArray(key),
     };
+  }
+
+  private static generatePassPhrase() {
+    const bs = 128;
+    const randomBts = new Uint32Array(bs / 32);
+    crypto.randomFillSync(randomBts);
+    const n = words.length;
+    const phraseWords = [];
+    let x, w1, w2, w3;
+    let i;
+    for (i = 0; i < randomBts.length; i++) {
+      x = randomBts[i];
+      w1 = x % n;
+      w2 = (((x / n) >> 0) + w1) % n;
+      w3 = (((((x / n) >> 0) / n) >> 0) + w2) % n;
+
+      phraseWords.push(words[w1]);
+      phraseWords.push(words[w2]);
+      phraseWords.push(words[w3]);
+    }
+
+    return phraseWords.join(' ');
   }
 }

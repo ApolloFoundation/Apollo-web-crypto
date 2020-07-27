@@ -92,7 +92,7 @@ export default class Crypto {
     const hex = converters.hexStringToByteArray(publicKey);
     let account: any = this.simpleHash(hex);
     account = converters.byteArrayToHexString(account);
-    const slice = (converters.hexStringToByteArray(account)).slice(0, 8);
+    const slice = converters.hexStringToByteArray(account).slice(0, 8);
     const accountId = converters.byteArrayToBigInteger(slice).toString();
     if (isRsFt) {
       return ReedSolomonEncode(accountId);
@@ -244,15 +244,15 @@ export default class Crypto {
       min = Math.ceil(min);
       max = Math.floor(max);
       return Math.floor(Math.random() * (max - min)) + min;
-    }
-    const numberOfWords = getRandomInt(10, 15)
+    };
+    const numberOfWords = getRandomInt(10, 15);
     const random = new Uint32Array(numberOfWords);
     crypto.randomFillSync(random);
     const n = words.length;
-    const	phraseWords = [];
-    let	i, x, w1;
+    const phraseWords = [];
+    let i, x, w1;
 
-    for (i=0; i < random.length; i++) {
+    for (i = 0; i < random.length; i++) {
       x = random[i];
       w1 = x % n;
       phraseWords.push(words[w1]);

@@ -160,23 +160,21 @@ export default class Transaction {
       const ecBlockId = bytesValue(blockchainResult.body.ecBlockId);
 
       const multiSigTx = () => {
-        const transactionBytes = Buffer.concat(
-          [
-            type,
-            subtype,
-            timestamp,
-            deadline,
-            senderPublicKey,
-            recipientId,
-            amount,
-            fee,
-            referencedTransactionFullHash,
-            flags,
-            ecBlockHeight,
-            ecBlockId,
-            appendix,
-          ],
-        );
+        const transactionBytes = Buffer.concat([
+          type,
+          subtype,
+          timestamp,
+          deadline,
+          senderPublicKey,
+          recipientId,
+          amount,
+          fee,
+          referencedTransactionFullHash,
+          flags,
+          ecBlockHeight,
+          ecBlockId,
+          appendix,
+        ]);
 
         const magic = Buffer.from('MSIG');
         const reserved = Buffer.alloc(4);
@@ -201,24 +199,22 @@ export default class Transaction {
 
       const oneSigTx = () => {
         const signature = Buffer.alloc(64);
-        const resultBytes = Buffer.concat(
-          [
-            type,
-            subtype,
-            timestamp,
-            deadline,
-            senderPublicKey,
-            recipientId,
-            amount,
-            fee,
-            referencedTransactionFullHash,
-            signature,
-            flags,
-            ecBlockHeight,
-            ecBlockId,
-            appendix,
-          ],
-        );
+        const resultBytes = Buffer.concat([
+          type,
+          subtype,
+          timestamp,
+          deadline,
+          senderPublicKey,
+          recipientId,
+          amount,
+          fee,
+          referencedTransactionFullHash,
+          signature,
+          flags,
+          ecBlockHeight,
+          ecBlockId,
+          appendix,
+        ]);
         const signatureBytes = Crypto.signBytes(resultBytes, data.senderSecret || data.parentSecret);
         resultBytes.set(signatureBytes, 96);
         return resultBytes;

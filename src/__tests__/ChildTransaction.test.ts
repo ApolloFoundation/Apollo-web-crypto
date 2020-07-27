@@ -17,23 +17,23 @@ describe('Child Transactions Tests', () => {
       senderSecret: '1011',
       recipient: 'APL-DGFX-8ZYH-M5B8-C3XDT', // child 2
       amount: 3 * ONE_APL,
-      attachment: JSON.stringify({text: 'Text in attachment'}),
+      attachment: JSON.stringify({ text: 'Text in attachment' }),
     };
     const resultTransactionBytes = await Transaction.generateTransactionBytes(data);
-    const txApi = new TxApi()
+    const txApi = new TxApi();
     txApi.basePath = process.env.APL_SERVER || 'http://localhost:7876/rest';
-    const responseTransaction = await txApi.broadcastTx({ tx: resultTransactionBytes })
-    console.log('---responseTransaction---', responseTransaction)
+    const responseTransaction = await txApi.broadcastTx({ tx: resultTransactionBytes });
+    console.log('---responseTransaction---', responseTransaction);
     expect(responseTransaction.body.transaction).not.toBeUndefined();
   });
 
   test('Create transactionBytes for create the child account ', async () => {
-    const aplPassphrase = Crypto.generatePassPhrase()
-    const publicKey: string = Crypto.getPublicKey(aplPassphrase)
-    const accountRs: string = Crypto.getAccountIdFromPublicKey(publicKey, true)
-    console.log('Account publicKey:', publicKey)
-    console.log('Account RS:', accountRs)
-    console.log('Account passphrase:', aplPassphrase)
+    const aplPassphrase = Crypto.generatePassPhrase();
+    const publicKey: string = Crypto.getPublicKey(aplPassphrase);
+    const accountRs: string = Crypto.getAccountIdFromPublicKey(publicKey, true);
+    console.log('Account publicKey:', publicKey);
+    console.log('Account RS:', accountRs);
+    console.log('Account passphrase:', aplPassphrase);
     const data = {
       requestType: 'childAccount',
       parent: 'APL-632K-TWX3-2ALQ-973CU',
@@ -41,10 +41,10 @@ describe('Child Transactions Tests', () => {
       publicKeys: [publicKey], // new child
     };
     const resultTransactionBytes = await Transaction.generateTransactionBytes(data);
-    const txApi = new TxApi()
+    const txApi = new TxApi();
     txApi.basePath = process.env.APL_SERVER || 'http://localhost:7876/rest';
-    const responseTransaction = await txApi.broadcastTx({ tx: resultTransactionBytes })
-    console.log('---responseTransaction---', responseTransaction)
+    const responseTransaction = await txApi.broadcastTx({ tx: resultTransactionBytes });
+    console.log('---responseTransaction---', responseTransaction);
     expect(responseTransaction.body.transaction).not.toBeUndefined();
   });
 });

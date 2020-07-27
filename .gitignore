@@ -11,3 +11,4 @@ package-lock.json
 .env
 
 .run
+./src/apollo-api-v2/

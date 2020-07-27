@@ -27,10 +27,10 @@ const writeToFile = (data: Uint8Array | string, fileName: string) => {
   fs.writeFileSync(`${__dirname}/${TEST_DATA_DIR}/out/${fileName}`, data, { encoding: 'binary', flag: 'w' });
 };
 
-const readFromFile = (fileName: string, type: string = 'utf-8') =>
+const readFromFile = (fileName: string, type: any = 'utf-8'): string | Buffer =>
   fs.readFileSync(`${__dirname}/${TEST_DATA_DIR}${fileName}`, type);
 
-const plainString: string = readFromFile(PLAIN_FILE_TEXT);
+const plainString: string | Buffer = readFromFile(PLAIN_FILE_TEXT);
 
 describe('Crypto Tests', () => {
   beforeAll(async () => {

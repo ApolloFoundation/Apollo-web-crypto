@@ -61,12 +61,16 @@ export default class Crypto {
     return converters.wordArrayToByteArrayImpl(hash, false);
   }
 
-  public static getPublicKey(secretPhrase: string | number[]): string {
+  public static getPublicKeyBytes(secretPhrase: string | number[]): number[] {
     if (typeof secretPhrase === 'string') {
       secretPhrase = converters.stringToHexStringToByteArray(secretPhrase);
     }
     const digest: number[] = this.simpleHash(secretPhrase);
-    return converters.byteArrayToHexString(curve25519.keygen(digest).p);
+    return curve25519.keygen(digest).p;
+  }
+
+  public static getPublicKey(secretPhrase: string | number[]): string {
+    return converters.byteArrayToHexString(this.getPublicKeyBytes(secretPhrase));
   }
 
   public static getPrivateKey(secretPhrase: string | number[]): string {
@@ -235,23 +239,23 @@ export default class Crypto {
     };
   }
 
-  private static generatePassPhrase() {
-    const bs = 128;
-    const randomBts = new Uint32Array(bs / 32);
-    crypto.randomFillSync(randomBts);
+  public static generatePassPhrase() {
+    const getRandomInt = (min: number, max: number) => {
+      min = Math.ceil(min);
+      max = Math.floor(max);
+      return Math.floor(Math.random() * (max - min)) + min;
+    }
+    const numberOfWords = getRandomInt(10, 15)
+    const random = new Uint32Array(numberOfWords);
+    crypto.randomFillSync(random);
     const n = words.length;
-    const phraseWords = [];
-    let x, w1, w2, w3;
-    let i;
-    for (i = 0; i < randomBts.length; i++) {
-      x = randomBts[i];
-      w1 = x % n;
-      w2 = (((x / n) >> 0) + w1) % n;
-      w3 = (((((x / n) >> 0) / n) >> 0) + w2) % n;
+    const	phraseWords = [];
+    let	i, x, w1;
 
+    for (i=0; i < random.length; i++) {
+      x = random[i];
+      w1 = x % n;
       phraseWords.push(words[w1]);
-      phraseWords.push(words[w2]);
-      phraseWords.push(words[w3]);
     }
 
     return phraseWords.join(' ');

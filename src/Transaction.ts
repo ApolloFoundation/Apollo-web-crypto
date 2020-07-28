@@ -108,7 +108,7 @@ export default class Transaction {
             appendix.writeUIntLE(childCountLength, 2, 2); // the child count, number of the public key array items
             data.publicKeys.map((child: string, i: number) => {
               const childBuf = Buffer.from(converters.hexStringToByteArray(child));
-              appendix.fill(childBuf, 4 + i * 32, 32);
+              appendix.fill(childBuf, 4 + i * 32);
             });
           }
           break;

@@ -28,7 +28,7 @@ describe('Child Transactions Tests', () => {
   });
 
   test('Create transactionBytes for create the child account ', async () => {
-    const aplPassphrase = Crypto.generatePassPhrase();
+    const aplPassphrase = "subsists coopers wheeling audios seven hoods paged geegaws layer lips jodhpurs soften rearming tackiest";
     const publicKey: string = Crypto.getPublicKey(aplPassphrase);
     const accountRs: string = Crypto.getAccountIdFromPublicKey(publicKey, true);
     console.log('Account publicKey:', publicKey);

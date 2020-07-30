@@ -65,53 +65,131 @@ export default class Transaction {
     return;
   }
 
+  private static bytesValue = (value: number | string | undefined = 0, bytes: number = 8) => {
+    const resBuff = Buffer.alloc(8);
+    const valueBigInt = BigInt(value);
+    resBuff.writeBigUInt64LE(valueBigInt, 0);
+    return resBuff.slice(0, bytes);
+  };
+
+  private static getTimestamp = (value: number | undefined = 0) => {
+    const timestampBuf = Buffer.alloc(4);
+    timestampBuf.writeUIntLE(value, 0, 4);
+    return timestampBuf;
+  };
+
+  private static getKey = (secretPhrase: string): Buffer => {
+    const secretPhraseHex = Crypto.getPublicKey(secretPhrase);
+    const secretPhraseBytes = converters.hexStringToByteArray(secretPhraseHex);
+    return Buffer.from(secretPhraseBytes);
+  };
+
+  private static getRecipient = (recipient: string) => {
+    const resBuff = Buffer.alloc(8);
+    if (recipient && recipient.length > 0) {
+      const recipientID: string = ReedSolomonDecode(recipient);
+      const bigIntRes = BigInt(recipientID);
+      resBuff.writeBigUInt64LE(bigIntRes, 0);
+    }
+    return resBuff;
+  };
+
+  private static getBlockchain = async () => {
+    const stateApi = new StateApi();
+    stateApi.basePath = process.env.APL_SERVER || 'http://localhost:7876/rest';
+    return stateApi.getBlockchainInfo();
+  };
+
+  private static checkMultiSig = (parentSecret: string, senderSecret: string): boolean => {
+    return !!(parentSecret && senderSecret && parentSecret !== senderSecret);
+  };
+
+  private static multiSigTx = (resultObj: any, data: any) => {
+    const transactionBytes = Buffer.concat([
+      resultObj.type,
+      resultObj.subtype,
+      resultObj.timestamp,
+      resultObj.deadline,
+      resultObj.senderPublicKey,
+      resultObj.recipientId,
+      resultObj.amount,
+      resultObj.fee,
+      resultObj.referencedTransactionFullHash,
+      resultObj.flags,
+      resultObj.ecBlockHeight,
+      resultObj.ecBlockId,
+      resultObj.appendix,
+    ]);
+
+    const magic = Buffer.from('MSIG');
+    const reserved = Buffer.alloc(4);
+    const participantNumber = Buffer.alloc(2);
+    participantNumber.writeUInt8(2, 0);
+    const keyId = resultObj.senderPublicKey.slice(0, 8);
+    const signature = Crypto.signBytes(transactionBytes, data.senderSecret);
+    const keyIdParent = Transaction.getKey(data.parentSecret).slice(0, 8);
+    const signatureParent = Crypto.signBytes(transactionBytes, data.parentSecret);
+    const signatureBytes = Buffer.concat([
+      magic,
+      reserved,
+      participantNumber,
+      keyId,
+      signature,
+      keyIdParent,
+      signatureParent,
+    ]);
+
+    return Buffer.concat([transactionBytes, signatureBytes]);
+  };
+
+  private static oneSigTx = (resultObj: any, data: any) => {
+    const signature = Buffer.alloc(64);
+    const resultBytes = Buffer.concat([
+      resultObj.type,
+      resultObj.subtype,
+      resultObj.timestamp,
+      resultObj.deadline,
+      resultObj.senderPublicKey,
+      resultObj.recipientId,
+      resultObj.amount,
+      resultObj.fee,
+      resultObj.referencedTransactionFullHash,
+      signature,
+      resultObj.flags,
+      resultObj.ecBlockHeight,
+      resultObj.ecBlockId,
+      resultObj.appendix,
+    ]);
+    const signatureBytes = Crypto.signBytes(resultBytes, data.senderSecret || data.parentSecret);
+    resultBytes.set(signatureBytes, 96);
+    return resultBytes;
+  };
+
   /**
    * Generate Transaction Structure
    * @documentation https://firstb.atlassian.net/wiki/spaces/APOLLO/pages/1250000936/Apollo+Transactions
    */
-  public static async generateTransactionBytes(data: any): Promise<any> {
-    const bytesValue = (value: number | string | undefined = 0, bytes: number = 8) => {
-      const resBuff = Buffer.alloc(8);
-      const valueBigInt = BigInt(value);
-      resBuff.writeBigUInt64LE(valueBigInt, 0);
-      return resBuff.slice(0, bytes);
-    };
-    const getType = (requestType: string): any => {
+  public static async sendMoneyTransactionBytes(data: any): Promise<any> {
+    const getType = (): any => {
       const typeBuf = Buffer.alloc(1);
       const subtypeBuf = Buffer.alloc(1);
       const flagsBuf = Buffer.alloc(4);
       let appendix = Buffer.alloc(0);
-      switch (requestType) {
-        case 'sendMoney':
-          typeBuf.writeUInt8(TransactionType.TYPE_PAYMENT, 0);
-          subtypeBuf.writeUInt8(0x20, 0);
-          if (data.attachment) {
-            flagsBuf.writeUIntLE(0x01, 0, 4);
-            const attachmentLength = data.attachment.length;
-            appendix = Buffer.alloc(5 + attachmentLength);
-            appendix.writeUInt8(1, 0); // version
-            appendix.writeIntLE(attachmentLength | 0x80000000, 1, 4); // the payload length max 1000 bytes
-            appendix.write(data.attachment, 5, attachmentLength); // the byte array of payload
-          } else {
-            flagsBuf.writeUIntLE(0x0, 0, 4);
-          }
-          break;
-        case 'childAccount':
-          typeBuf.writeUInt8(TransactionType.TYPE_CHILD_ACCOUNT, 0);
-          subtypeBuf.writeUInt8(0x10, 0);
-          flagsBuf.writeUIntLE(0x0, 0, 4);
-          if (data.publicKeys) {
-            const childCountLength = data.publicKeys.length;
-            appendix = Buffer.alloc(4 + childCountLength * 32);
-            appendix.writeUInt8(1, 0); // version
-            appendix.writeUInt8(1, 1); // the Address Scope: 0-External, 1-InFamily, 2-Custom
-            appendix.writeUIntLE(childCountLength, 2, 2); // the child count, number of the public key array items
-            data.publicKeys.map((child: string, i: number) => {
-              const childBuf = Buffer.from(converters.hexStringToByteArray(child));
-              appendix.fill(childBuf, 4 + i * 32);
-            });
-          }
-          break;
+      typeBuf.writeUInt8(TransactionType.TYPE_PAYMENT, 0);
+      if (this.checkMultiSig(data.parentSecret, data.senderSecret)) {
+        subtypeBuf.writeUInt8(0x20, 0);
+      } else {
+        subtypeBuf.writeUInt8(0x10, 0);
+      }
+      if (data.attachment) {
+        flagsBuf.writeUIntLE(0x01, 0, 4);
+        const attachmentLength = data.attachment.length;
+        appendix = Buffer.alloc(5 + attachmentLength);
+        appendix.writeUInt8(1, 0); // version
+        appendix.writeIntLE(attachmentLength | 0x80000000, 1, 4); // the payload length max 1000 bytes
+        appendix.write(data.attachment, 5); // the byte array of payload
+      } else {
+        flagsBuf.writeUIntLE(0x0, 0, 4);
       }
       return {
         type: typeBuf,
@@ -120,107 +198,112 @@ export default class Transaction {
         appendix,
       };
     };
-    const getTimestamp = (value: number | undefined = 0) => {
-      const timestampBuf = Buffer.alloc(4);
-      timestampBuf.writeUIntLE(value, 0, 4);
-      return timestampBuf;
-    };
-    const getKey = (secretPhrase: string): Buffer => {
-      const secretPhraseHex = Crypto.getPublicKey(secretPhrase);
-      const secretPhraseBytes = converters.hexStringToByteArray(secretPhraseHex);
-      return Buffer.from(secretPhraseBytes);
-    };
-    const getRecipient = (recipient: string) => {
-      const resBuff = Buffer.alloc(8);
-      if (recipient && recipient.length > 0) {
-        const recipientID: string = ReedSolomonDecode(recipient);
-        const bigIntRes = BigInt(recipientID);
-        resBuff.writeBigUInt64LE(bigIntRes, 0);
+
+    try {
+      const blockchainResult = await this.getBlockchain();
+
+      const { type, subtype, flags, appendix } = getType();
+      const timestamp = this.getTimestamp(blockchainResult.body.txTimestamp);
+      const deadline = this.bytesValue(data.deadline || 1440, 2);
+      const senderPublicKey = this.getKey(data.senderSecret || data.parentSecret);
+      const recipientId = this.getRecipient(data.recipient || data.parent);
+      const amount = this.bytesValue(data.amount);
+      const fee = this.bytesValue(data.fee);
+      const referencedTransactionFullHash = Buffer.alloc(32);
+      const ecBlockHeight = this.bytesValue(blockchainResult.body.ecBlockHeight, 4);
+      const ecBlockId = this.bytesValue(blockchainResult.body.ecBlockId);
+
+      const resultObj = {
+        type,
+        subtype,
+        timestamp,
+        deadline,
+        senderPublicKey,
+        recipientId,
+        amount,
+        fee,
+        referencedTransactionFullHash,
+        flags,
+        ecBlockHeight,
+        ecBlockId,
+        appendix,
+      };
+      let unsignedTransactionBytes;
+      if (this.checkMultiSig(data.parentSecret, data.senderSecret)) {
+        unsignedTransactionBytes = this.multiSigTx(resultObj, data);
+      } else {
+        unsignedTransactionBytes = this.oneSigTx(resultObj, data);
       }
-      return resBuff;
-    };
-    const getBlockchain = async () => {
-      const stateApi = new StateApi();
-      stateApi.basePath = process.env.APL_SERVER || 'http://localhost:7876/rest';
-      return stateApi.getBlockchainInfo();
+      return converters.byteArrayToHexString(unsignedTransactionBytes);
+    } catch (e) {
+      console.log(e);
+      throw new Error(e.message);
+    }
+  }
+
+  /**
+   * Generate Transaction Structure
+   * @documentation https://firstb.atlassian.net/wiki/spaces/APOLLO/pages/1250000936/Apollo+Transactions
+   */
+  public static async childAccountTransactionBytes(data: any): Promise<any> {
+    const getType = (): any => {
+      const typeBuf = Buffer.alloc(1);
+      const subtypeBuf = Buffer.alloc(1);
+      const flagsBuf = Buffer.alloc(4);
+      let appendix = Buffer.alloc(0);
+
+      typeBuf.writeUInt8(TransactionType.TYPE_CHILD_ACCOUNT, 0);
+      subtypeBuf.writeUInt8(0x10, 0);
+      flagsBuf.writeUIntLE(0x0, 0, 4);
+      if (data.publicKeys) {
+        const childCountLength = data.publicKeys.length;
+        appendix = Buffer.alloc(4 + childCountLength * 32);
+        appendix.writeUInt8(1, 0); // version
+        appendix.writeUInt8(1, 1); // the Address Scope: 0-External, 1-InFamily, 2-Custom
+        appendix.writeUIntLE(childCountLength, 2, 2); // the child count, number of the public key array items
+        data.publicKeys.map((child: string, i: number) => {
+          const childBuf = Buffer.from(converters.hexStringToByteArray(child));
+          appendix.fill(childBuf, 4 + i * 32);
+        });
+      }
+      return {
+        type: typeBuf,
+        subtype: subtypeBuf,
+        flags: flagsBuf,
+        appendix,
+      };
     };
 
     try {
-      const blockchainResult = await getBlockchain();
+      const blockchainResult = await this.getBlockchain();
 
-      const { type, subtype, flags, appendix } = getType(data.requestType);
-      const timestamp = getTimestamp(blockchainResult.body.txTimestamp);
-      const deadline = bytesValue(data.deadline || 1440, 2);
-      const senderPublicKey = getKey(data.senderSecret || data.parentSecret);
-      const recipientId = getRecipient(data.recipient || data.parent);
-      const amount = bytesValue(data.amount);
-      const fee = bytesValue(data.fee);
+      const { type, subtype, flags, appendix } = getType();
+      const timestamp = this.getTimestamp(blockchainResult.body.txTimestamp);
+      const deadline = this.bytesValue(data.deadline || 1440, 2);
+      const senderPublicKey = this.getKey(data.senderSecret || data.parentSecret);
+      const recipientId = this.getRecipient(data.recipient || data.parent);
+      const amount = this.bytesValue(data.amount);
+      const fee = this.bytesValue(data.fee);
       const referencedTransactionFullHash = Buffer.alloc(32);
-      const ecBlockHeight = bytesValue(blockchainResult.body.ecBlockHeight, 4);
-      const ecBlockId = bytesValue(blockchainResult.body.ecBlockId);
+      const ecBlockHeight = this.bytesValue(blockchainResult.body.ecBlockHeight, 4);
+      const ecBlockId = this.bytesValue(blockchainResult.body.ecBlockId);
 
-      const multiSigTx = () => {
-        const transactionBytes = Buffer.concat([
-          type,
-          subtype,
-          timestamp,
-          deadline,
-          senderPublicKey,
-          recipientId,
-          amount,
-          fee,
-          referencedTransactionFullHash,
-          flags,
-          ecBlockHeight,
-          ecBlockId,
-          appendix,
-        ]);
-
-        const magic = Buffer.from('MSIG');
-        const reserved = Buffer.alloc(4);
-        const participantNumber = Buffer.alloc(2);
-        participantNumber.writeUInt8(2, 0);
-        const keyId = senderPublicKey.slice(0, 8);
-        const signature = Crypto.signBytes(transactionBytes, data.senderSecret);
-        const keyIdParent = getKey(data.parentSecret).slice(0, 8);
-        const signatureParent = Crypto.signBytes(transactionBytes, data.parentSecret);
-        const signatureBytes = Buffer.concat([
-          magic,
-          reserved,
-          participantNumber,
-          keyId,
-          signature,
-          keyIdParent,
-          signatureParent,
-        ]);
-
-        return Buffer.concat([transactionBytes, signatureBytes]);
+      const resultObj = {
+        type,
+        subtype,
+        timestamp,
+        deadline,
+        senderPublicKey,
+        recipientId,
+        amount,
+        fee,
+        referencedTransactionFullHash,
+        flags,
+        ecBlockHeight,
+        ecBlockId,
+        appendix,
       };
-
-      const oneSigTx = () => {
-        const signature = Buffer.alloc(64);
-        const resultBytes = Buffer.concat([
-          type,
-          subtype,
-          timestamp,
-          deadline,
-          senderPublicKey,
-          recipientId,
-          amount,
-          fee,
-          referencedTransactionFullHash,
-          signature,
-          flags,
-          ecBlockHeight,
-          ecBlockId,
-          appendix,
-        ]);
-        const signatureBytes = Crypto.signBytes(resultBytes, data.senderSecret || data.parentSecret);
-        resultBytes.set(signatureBytes, 96);
-        return resultBytes;
-      };
-
-      const unsignedTransactionBytes = data.requestType === 'childAccount' ? oneSigTx() : multiSigTx();
+      const unsignedTransactionBytes = this.oneSigTx(resultObj, data);
       return converters.byteArrayToHexString(unsignedTransactionBytes);
     } catch (e) {
       console.log(e);

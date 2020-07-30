@@ -10,7 +10,6 @@ describe('Child Transactions Tests', () => {
 
   test('Create transactionBytes for send money', async () => {
     const data = {
-      requestType: 'sendMoney',
       parent: 'APL-632K-TWX3-2ALQ-973CU',
       parentSecret: '101',
       sender: 'APL-8QBE-DAN8-ZYF4-HE3GZ', // child 1
@@ -19,7 +18,7 @@ describe('Child Transactions Tests', () => {
       amount: 3 * ONE_APL,
       attachment: JSON.stringify({ text: 'Text in attachment' }),
     };
-    const resultTransactionBytes = await Transaction.generateTransactionBytes(data);
+    const resultTransactionBytes = await Transaction.sendMoneyTransactionBytes(data);
     const txApi = new TxApi();
     txApi.basePath = process.env.APL_SERVER || 'http://localhost:7876/rest';
     const responseTransaction = await txApi.broadcastTx({ tx: resultTransactionBytes });
@@ -28,23 +27,26 @@ describe('Child Transactions Tests', () => {
   });
 
   test('Create transactionBytes for create the child account ', async () => {
-    const aplPassphrase = Crypto.generatePassPhrase();
-    const publicKey: string = Crypto.getPublicKey(aplPassphrase);
-    const accountRs: string = Crypto.getAccountIdFromPublicKey(publicKey, true);
-    console.log('Account publicKey:', publicKey);
-    console.log('Account RS:', accountRs);
-    console.log('Account passphrase:', aplPassphrase);
-    const data = {
-      requestType: 'childAccount',
-      parent: 'APL-632K-TWX3-2ALQ-973CU',
-      parentSecret: '101',
-      publicKeys: [publicKey], // new child
-    };
-    const resultTransactionBytes = await Transaction.generateTransactionBytes(data);
-    const txApi = new TxApi();
-    txApi.basePath = process.env.APL_SERVER || 'http://localhost:7876/rest';
-    const responseTransaction = await txApi.broadcastTx({ tx: resultTransactionBytes });
-    console.log('---responseTransaction---', responseTransaction);
-    expect(responseTransaction.body.transaction).not.toBeUndefined();
+    try {
+      const aplPassphrase = Crypto.generatePassPhrase();
+      const publicKey: string = Crypto.getPublicKey(aplPassphrase);
+      const accountRs: string = Crypto.getAccountIdFromPublicKey(publicKey, true);
+      console.log('Account publicKey:', publicKey);
+      console.log('Account RS:', accountRs);
+      console.log('Account passphrase:', aplPassphrase);
+      const data = {
+        parent: 'APL-632K-TWX3-2ALQ-973CU',
+        parentSecret: '101',
+        publicKeys: [publicKey], // new child
+      };
+      const resultTransactionBytes = await Transaction.childAccountTransactionBytes(data);
+      const txApi = new TxApi();
+      txApi.basePath = process.env.APL_SERVER || 'http://localhost:7876/rest';
+      const responseTransaction = await txApi.broadcastTx({ tx: resultTransactionBytes });
+      console.log('---responseTransaction---', responseTransaction);
+      expect(responseTransaction.body.transaction).not.toBeUndefined();
+    } catch (e) {
+      console.log(e.response.body)
+    }
   });
 });

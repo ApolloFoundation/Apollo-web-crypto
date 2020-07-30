@@ -3,7 +3,7 @@ import Transaction from '../Transaction';
 const ONE_APL = 100000000;
 
 describe('Transaction Tests', () => {
-  process.env.APL_SERVER = 'http://localhost:7876';
+  process.env.APL_SERVER = 'https://apl-t3-1.testnet3.apollowallet.org';
 
   test('SendMoney with doNotSign', async () => {
     const data = {

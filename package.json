@@ -1,6 +1,6 @@
 {
   "name": "apl-web-crypto",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "JS implementation of APL Crypto",
   "private": false,
   "main": "lib/index.js",

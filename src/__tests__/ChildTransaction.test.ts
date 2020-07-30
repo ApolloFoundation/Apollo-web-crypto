@@ -46,7 +46,7 @@ describe('Child Transactions Tests', () => {
       console.log('---responseTransaction---', responseTransaction);
       expect(responseTransaction.body.transaction).not.toBeUndefined();
     } catch (e) {
-      console.log(e.response.body)
+      console.log(e.response.body);
     }
   });
 });

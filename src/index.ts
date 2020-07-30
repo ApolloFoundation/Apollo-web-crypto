@@ -1,3 +1,4 @@
+import * as ApolloApi from './apollo-api-v2/api';
 import Transaction from './Transaction';
 import Crypto from './Crypto';
 import ElGamalEncryption from './ElGamalEncryption';
@@ -11,4 +12,4 @@ export const processAccountRStoID = (accountRS: string) => {
   return ReedSolomonDecode(accountRS);
 };
 
-export { Transaction, Crypto, ElGamalEncryption };
+export { Transaction, Crypto, ElGamalEncryption, ApolloApi };

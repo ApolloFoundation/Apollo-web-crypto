@@ -7,6 +7,7 @@ describe('Child Transactions Tests', () => {
   // process.env.APL_SERVER = 'http://localhost:7876/rest';
 
   test('Create transactionBytes for send money', async () => {
+    const blockchainResult = await Transaction.getBlockchain();
     const data = {
       parent: 'APL-632K-TWX3-2ALQ-973CU',
       parentSecret: '101',
@@ -15,6 +16,9 @@ describe('Child Transactions Tests', () => {
       recipient: 'APL-DGFX-8ZYH-M5B8-C3XDT', // child 2
       amount: 3 * ONE_APL,
       attachment: JSON.stringify({ text: 'Text in attachment' }),
+      txTimestamp: blockchainResult.body.txTimestamp,
+      ecBlockHeight: blockchainResult.body.ecBlockHeight,
+      ecBlockId: blockchainResult.body.ecBlockId,
     };
     const resultTransactionBytes = await Transaction.sendMoneyTransactionBytes(data);
     const txApi = new ApolloApi.TxApi();
@@ -26,6 +30,7 @@ describe('Child Transactions Tests', () => {
 
   test('Create transactionBytes for create the child account ', async () => {
     try {
+      const blockchainResult = await Transaction.getBlockchain();
       const aplPassphrase = Crypto.generatePassPhrase();
       const publicKey: string = Crypto.getPublicKey(aplPassphrase);
       const accountRs: string = Crypto.getAccountIdFromPublicKey(publicKey, true);
@@ -36,6 +41,9 @@ describe('Child Transactions Tests', () => {
         parent: 'APL-632K-TWX3-2ALQ-973CU',
         parentSecret: '101',
         publicKeys: [publicKey], // new child
+        txTimestamp: blockchainResult.body.txTimestamp,
+        ecBlockHeight: blockchainResult.body.ecBlockHeight,
+        ecBlockId: blockchainResult.body.ecBlockId,
       };
       const resultTransactionBytes = await Transaction.childAccountTransactionBytes(data);
       const txApi = new ApolloApi.TxApi();

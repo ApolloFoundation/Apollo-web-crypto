@@ -94,7 +94,7 @@ export default class Transaction {
     return resBuff;
   };
 
-  private static getBlockchain = async () => {
+  public static getBlockchain = async () => {
     const stateApi = new StateApi();
     stateApi.basePath = process.env.APL_SERVER || 'http://localhost:7876/rest';
     return stateApi.getBlockchainInfo();
@@ -200,18 +200,23 @@ export default class Transaction {
     };
 
     try {
-      const blockchainResult = await this.getBlockchain();
+      if (!data.txTimestamp || !data.ecBlockHeight || !data.ecBlockId) {
+        const blockchainResult = await this.getBlockchain();
+        data.txTimestamp = blockchainResult.body.txTimestamp;
+        data.ecBlockHeight = blockchainResult.body.ecBlockHeight;
+        data.ecBlockId = blockchainResult.body.ecBlockId;
+      }
 
       const { type, subtype, flags, appendix } = getType();
-      const timestamp = this.getTimestamp(blockchainResult.body.txTimestamp);
+      const timestamp = this.getTimestamp(data.txTimestamp);
       const deadline = this.bytesValue(data.deadline || 1440, 2);
       const senderPublicKey = this.getKey(data.senderSecret || data.parentSecret);
       const recipientId = this.getRecipient(data.recipient || data.parent);
       const amount = this.bytesValue(data.amount);
       const fee = this.bytesValue(data.fee);
       const referencedTransactionFullHash = Buffer.alloc(32);
-      const ecBlockHeight = this.bytesValue(blockchainResult.body.ecBlockHeight, 4);
-      const ecBlockId = this.bytesValue(blockchainResult.body.ecBlockId);
+      const ecBlockHeight = this.bytesValue(data.ecBlockHeight, 4);
+      const ecBlockId = this.bytesValue(data.ecBlockId);
 
       const resultObj = {
         type,
@@ -275,18 +280,16 @@ export default class Transaction {
     };
 
     try {
-      const blockchainResult = await this.getBlockchain();
-
       const { type, subtype, flags, appendix } = getType();
-      const timestamp = this.getTimestamp(blockchainResult.body.txTimestamp);
+      const timestamp = this.getTimestamp(data.txTimestamp);
       const deadline = this.bytesValue(data.deadline || 1440, 2);
       const senderPublicKey = this.getKey(data.senderSecret || data.parentSecret);
       const recipientId = this.getRecipient(data.recipient || data.parent);
       const amount = this.bytesValue(data.amount);
       const fee = this.bytesValue(data.fee);
       const referencedTransactionFullHash = Buffer.alloc(32);
-      const ecBlockHeight = this.bytesValue(blockchainResult.body.ecBlockHeight, 4);
-      const ecBlockId = this.bytesValue(blockchainResult.body.ecBlockId);
+      const ecBlockHeight = this.bytesValue(data.ecBlockHeight, 4);
+      const ecBlockId = this.bytesValue(data.ecBlockId);
 
       const resultObj = {
         type,

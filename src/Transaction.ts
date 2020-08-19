@@ -97,7 +97,7 @@ export default class Transaction {
   public static getBlockchain = async () => {
     const stateApi = new StateApi();
     stateApi.basePath = process.env.APL_SERVER || 'http://localhost:7876/rest';
-    return stateApi.getBlockchainInfo();
+    return stateApi.getBlockchainState();
   };
 
   private static checkMultiSig = (parentSecret: string, senderSecret: string): boolean => {

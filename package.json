@@ -13,7 +13,7 @@
     "prepublishOnly": "yarn build",
     "version": "yarn test && yarn format && git add -A src",
     "postversion": "git push && git push --tags",
-    "generate-apollo-api-v2": "openapi-generator generate -i https://raw.githubusercontent.com/ApolloFoundation/Apollo/feature/APL-1622-operation-api/apl-api2/src/main/resources/yaml/apollo-api-v2.yaml -g typescript-node -o ./src/apollo-api-v2 --additional-properties supportsES6=true && replace-in-file --configFile=replace-config.js"
+    "generate-apollo-api-v2": "openapi-generator generate -i https://raw.githubusercontent.com/ApolloFoundation/Apollo/feature/APL-1679-blockchain-info/apl-api2/src/main/resources/yaml/apollo-api-v2.yaml -g typescript-node -o ./src/apollo-api-v2 --additional-properties supportsES6=true && replace-in-file --configFile=replace-config.js"
   },
   "keywords": [
     "First Bridge",

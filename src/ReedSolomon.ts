@@ -71,7 +71,7 @@ const codewordMap = [3, 2, 1, 0, 7, 6, 5, 4, 13, 14, 15, 16, 12, 8, 9, 10, 11];
 const alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
 const base32Length = 13;
 const base10Length = 20;
-const DEFAULT_PREFIX = 'APL-';
+const DEFAULT_PREFIX = 'APL';
 
 export const ReedSolomonEncode = (id: number | string, prefix = DEFAULT_PREFIX) => {
   const idString = id.toString();
@@ -120,7 +120,7 @@ export const ReedSolomonEncode = (id: number | string, prefix = DEFAULT_PREFIX) 
       accountRS += '-';
     }
   }
-  return prefix + accountRS.toString();
+  return prefix + '-' + accountRS.toString();
 };
 
 export const ReedSolomonDecode = (accountRS: string) => {

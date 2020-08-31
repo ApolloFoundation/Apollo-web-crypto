@@ -88,14 +88,14 @@ export default class Crypto {
     return this.sharedSecretToSharedKey(sharedSecret, nonce);
   }
 
-  public static getAccountIdFromPublicKey(publicKey: string, isRsFt: boolean): string {
+  public static getAccountIdFromPublicKey(publicKey: string, isRsFt: boolean, prefix?: string): string {
     const hex = converters.hexStringToByteArray(publicKey);
     let account: any = this.simpleHash(hex);
     account = converters.byteArrayToHexString(account);
     const slice = converters.hexStringToByteArray(account).slice(0, 8);
     const accountId = converters.byteArrayToBigInteger(slice).toString();
     if (isRsFt) {
-      return ReedSolomonEncode(accountId);
+      return ReedSolomonEncode(accountId, prefix);
     } else {
       return accountId;
     }

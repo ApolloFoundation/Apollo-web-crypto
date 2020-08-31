@@ -73,7 +73,7 @@ const base32Length = 13;
 const base10Length = 20;
 const DEFAULT_PREFIX = 'APL-';
 
-export const ReedSolomonEncode = (id: number | string) => {
+export const ReedSolomonEncode = (id: number | string, prefix = DEFAULT_PREFIX) => {
   const idString = id.toString();
   let idLength = idString.length;
   let idArray = new Array(base10Length).fill(0);
@@ -120,7 +120,7 @@ export const ReedSolomonEncode = (id: number | string) => {
       accountRS += '-';
     }
   }
-  return DEFAULT_PREFIX + accountRS.toString();
+  return prefix + accountRS.toString();
 };
 
 export const ReedSolomonDecode = (accountRS: string) => {
@@ -130,10 +130,10 @@ export const ReedSolomonDecode = (accountRS: string) => {
     ...codeword.slice(initialCodeword.length - 1, codeword.length),
   ];
 
-  if (accountRS.slice(0, 4) === 'APL-') {
-    accountRS = accountRS.replace('APL-', '');
-  }
-  let accountRSLength = accountRS.length;
+  const prefixIndex = accountRS.indexOf("-");
+  accountRS = accountRS.slice(prefixIndex + 1)
+
+  const accountRSLength = accountRS.length;
   let codewordLength = 0;
   for (let i = 0; i < accountRSLength; i++) {
     const positionInAlphabet = alphabet.indexOf(accountRS.charAt(i));
@@ -141,7 +141,7 @@ export const ReedSolomonDecode = (accountRS: string) => {
       continue;
     }
 
-    if (codewordLength > 16) {
+    if (codewordLength > 17) {
       console.log('Codeword too long');
       return null;
     }

@@ -130,8 +130,8 @@ export const ReedSolomonDecode = (accountRS: string) => {
     ...codeword.slice(initialCodeword.length - 1, codeword.length),
   ];
 
-  const prefixIndex = accountRS.indexOf("-");
-  accountRS = accountRS.slice(prefixIndex + 1)
+  const prefixIndex = accountRS.indexOf('-');
+  accountRS = accountRS.slice(prefixIndex + 1);
 
   const accountRSLength = accountRS.length;
   let codewordLength = 0;

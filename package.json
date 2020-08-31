@@ -11,7 +11,7 @@
     "lint": "tslint -p tsconfig.json",
     "build": "tsc",
     "prepublishOnly": "yarn build",
-    "version": "yarn test && yarn format && git add -A src",
+    "version": "yarn format && git add -A src",
     "postversion": "git push && git push --tags",
     "generate-apollo-api-v2": "openapi-generator generate -i https://raw.githubusercontent.com/ApolloFoundation/Apollo/zpl-stage/apl-api2/src/main/resources/yaml/apollo-api-v2.yaml -g typescript-node -o ./src/apollo-api-v2 --additional-properties supportsES6=true && replace-in-file --configFile=replace-config.js"
   },

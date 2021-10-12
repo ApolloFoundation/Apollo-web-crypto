@@ -1,0 +1,27 @@
+{
+  "name": "SignTransactionSample",
+  "version": "1.0.0",
+  "description": "Sign transaction sample",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node signTransaction.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://firstb@bitbucket.org/firstbridge_company/apollo-faucet.git"
+  },
+  "author": "Rostyslav Golda",
+  "license": "GPL-2.0-or-later",
+  "homepage": "https://bitbucket.org/firstbridge_company/apollo-faucet#readme",
+  "dependencies": {
+    "apl-web-crypto": "^1.0.0",
+    "request": "^2.88.2",
+    "sqlite3": "^4.0.8",
+    "typescript": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^16.9.4",
+    "dotenv": "^10.0.0"
+  }
+}

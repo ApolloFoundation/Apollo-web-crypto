@@ -5,8 +5,8 @@ import Crypto from './Crypto';
 import ElGamalEncryption from './ElGamalEncryption';
 import { ReedSolomonDecode, ReedSolomonEncode } from './ReedSolomon';
 
-export const processAccountIDtoRS = (accountID: number | string) => {
-  return ReedSolomonEncode(accountID);
+export const processAccountIDtoRS = (accountID: number | string, prefix?: string) => {
+  return ReedSolomonEncode(accountID, prefix);
 };
 
 export const processAccountRStoID = (accountRS: string) => {

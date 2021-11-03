@@ -3,8 +3,8 @@
   "version": "1.0.19",
   "description": "JS implementation of APL Crypto",
   "private": false,
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "scripts": {
     "test": "yarn generate-apollo-api-v2 && jest --config jest.config.js",
     "format": "prettier --write \"src/**/*.ts\"",

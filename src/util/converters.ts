@@ -16,7 +16,6 @@
 
 // @ts-nocheck
 import * as CryptoJS from 'crypto-js';
-import { WordArray } from 'crypto-js';
 import { BigInteger } from 'jsbn';
 
 const charToNibble = {};
@@ -118,7 +117,7 @@ export default {
     return value;
   },
   // create a wordArray that is Big-Endian
-  byteArrayToWordArray(byteArray): WordArray {
+  byteArrayToWordArray(byteArray): any {
     let i = 0;
     let offset = 0;
     let word = 0;
@@ -290,7 +289,7 @@ export default {
    * @param {string} u8Str The Uint8Array.
    * @return {WordArray} The word array.
    */
-  byteArrayToWordArrayEx(u8arr) {
+  byteArrayToWordArrayEx(u8arr): any {
     // Shortcut
     const len = u8arr.length;
 

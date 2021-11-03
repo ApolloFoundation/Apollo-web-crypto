@@ -1,5 +1,4 @@
 import * as CryptoJS from 'crypto-js';
-import { WordArray } from 'crypto-js';
 
 const pako = require('pako');
 const crypto = require('crypto');
@@ -213,7 +212,7 @@ export default class Crypto {
       sharedKey = options.sharedKey.slice(0); // clone
     }
 
-    let key: WordArray;
+    let key: any;
     if (options.nonce) {
       for (let i = 0; i < 32; i++) {
         sharedKey[i] ^= options.nonce[i];

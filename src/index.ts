@@ -16,7 +16,8 @@ export const processAccountRStoID = (accountRS: string) => {
 export const processAccountRStoHex = (accountRS: string, needPrefix: boolean = false) => {
   const accountID = ReedSolomonDecode(accountRS);
   const hexString = new BigInteger(accountID).toString(16);
-  return needPrefix ? `0x${hexString}` : hexString;
+  const additionalElement = hexString.length % 2 > 0 ? '0' : '';
+  return needPrefix ? `0x${additionalElement}${hexString}` : hexString;
 };
 
 export { Transaction, Crypto, ElGamalEncryption, ApolloApi };

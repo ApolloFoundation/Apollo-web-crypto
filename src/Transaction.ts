@@ -173,7 +173,6 @@ export default class Transaction {
     return this.sendMoneyWithAttachmentTransactionBytes(data, true);
   }
 
-
   /**
    * Generate Transaction Structure
    * @documentation https://firstb.atlassian.net/wiki/spaces/APOLLO/pages/1250000936/Apollo+Transactions
@@ -200,14 +199,14 @@ export default class Transaction {
           appendix.write(data.attachment, 5); // the byte array of payload
         } else {
           if (typeof data.attachment === 'string') {
-            const attachmentBuff: Uint8Array = new Uint8Array(converters.hexStringToByteArray(data.attachment))
+            const attachmentBuff: Uint8Array = new Uint8Array(converters.hexStringToByteArray(data.attachment));
             const attachmentLength = attachmentBuff.length;
             appendix = Buffer.alloc(5 + attachmentLength);
             appendix.writeUInt8(1, 0); // version
             appendix.writeIntLE(attachmentLength, 1, 4); // the payload length max 1000 bytes
             appendix.fill(attachmentBuff, 5, 5 + attachmentLength, 'binary'); // the byte array of payload
           } else {
-            throw new Error('Attachment type must be hex string')
+            throw new Error('Attachment type must be hex string');
           }
         }
       } else {

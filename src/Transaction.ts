@@ -170,6 +170,15 @@ export default class Transaction {
    * @documentation https://firstb.atlassian.net/wiki/spaces/APOLLO/pages/1250000936/Apollo+Transactions
    */
   public static async sendMoneyTransactionBytes(data: any): Promise<any> {
+    return this.sendMoneyWithAttachmentTransactionBytes(data, true);
+  }
+
+
+  /**
+   * Generate Transaction Structure
+   * @documentation https://firstb.atlassian.net/wiki/spaces/APOLLO/pages/1250000936/Apollo+Transactions
+   */
+  public static async sendMoneyWithAttachmentTransactionBytes(data: any, isTextAttachment: boolean): Promise<any> {
     const getType = (): any => {
       const typeBuf = Buffer.alloc(1);
       const subtypeBuf = Buffer.alloc(1);
@@ -183,11 +192,24 @@ export default class Transaction {
       }
       if (data.attachment) {
         flagsBuf.writeUIntLE(0x01, 0, 4);
-        const attachmentLength = data.attachment.length;
-        appendix = Buffer.alloc(5 + attachmentLength);
-        appendix.writeUInt8(1, 0); // version
-        appendix.writeIntLE(attachmentLength | 0x80000000, 1, 4); // the payload length max 1000 bytes
-        appendix.write(data.attachment, 5); // the byte array of payload
+        if (isTextAttachment) {
+          const attachmentLength = data.attachment.length;
+          appendix = Buffer.alloc(5 + attachmentLength);
+          appendix.writeUInt8(1, 0); // version
+          appendix.writeIntLE(attachmentLength | 0x80000000, 1, 4); // the payload length max 1000 bytes
+          appendix.write(data.attachment, 5); // the byte array of payload
+        } else {
+          if (typeof data.attachment === 'string') {
+            const attachmentBuff: Uint8Array = new Uint8Array(converters.hexStringToByteArray(data.attachment))
+            const attachmentLength = attachmentBuff.length;
+            appendix = Buffer.alloc(5 + attachmentLength);
+            appendix.writeUInt8(1, 0); // version
+            appendix.writeIntLE(attachmentLength, 1, 4); // the payload length max 1000 bytes
+            appendix.fill(attachmentBuff, 5, 5 + attachmentLength, 'binary'); // the byte array of payload
+          } else {
+            throw new Error('Attachment type must be hex string')
+          }
+        }
       } else {
         flagsBuf.writeUIntLE(0x0, 0, 4);
       }

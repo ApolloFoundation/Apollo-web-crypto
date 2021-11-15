@@ -57,6 +57,9 @@ export default {
     return bytes;
   },
   hexStringToByteArray(str) {
+    if (str.indexOf('0x') === 0) {
+      str = str.replace('0x', '')
+    }
     const bytes = [];
     let i = 0;
     if (str.length % 2 !== 0) {

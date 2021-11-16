@@ -9,18 +9,18 @@ import { TransactionType } from './constants/TransactionType';
 import { StateApi } from './apollo-api-v2/api/stateApi';
 
 export interface TransactionData {
-  recipient: string
-  amount: number
-  fee: number
-  parent?: string
-  parentSecret?: string
-  sender?: string
-  senderSecret?: string
-  txTimestamp?: number
-  ecBlockHeight?: number | string
-  ecBlockId?: string
-  attachment?: string
-  deadline?: number
+  recipient: string;
+  amount: number;
+  fee: number;
+  parent?: string;
+  parentSecret?: string;
+  sender?: string;
+  senderSecret?: string;
+  txTimestamp?: number;
+  ecBlockHeight?: number | string;
+  ecBlockId?: string;
+  attachment?: string;
+  deadline?: number;
 }
 
 export default class Transaction {
@@ -194,7 +194,10 @@ export default class Transaction {
    * Generate Transaction Structure
    * @documentation https://firstb.atlassian.net/wiki/spaces/APOLLO/pages/1250000936/Apollo+Transactions
    */
-  public static async sendMoneyWithAttachmentTransactionBytes(data: TransactionData, isTextAttachment: boolean): Promise<string> {
+  public static async sendMoneyWithAttachmentTransactionBytes(
+    data: TransactionData,
+    isTextAttachment: boolean,
+  ): Promise<string> {
     const getType = (): any => {
       const typeBuf = Buffer.alloc(1);
       const subtypeBuf = Buffer.alloc(1);

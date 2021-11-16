@@ -1,10 +1,27 @@
+const Buffer = require('buffer/').Buffer;
+
 import Crypto from './Crypto';
 import ElGamalEncryption from './ElGamalEncryption';
-import { GET, handleFetch, POST } from './helpers/fetch';
+import { handleFetch, POST } from './helpers/fetch';
 import converters from './util/converters';
 import { ReedSolomonDecode } from './ReedSolomon';
 import { TransactionType } from './constants/TransactionType';
 import { StateApi } from './apollo-api-v2/api/stateApi';
+
+export interface TransactionData {
+  recipient: string
+  amount: number
+  fee: number
+  parent?: string
+  parentSecret?: string
+  sender?: string
+  senderSecret?: string
+  txTimestamp?: number
+  ecBlockHeight?: number | string
+  ecBlockId?: string
+  attachment?: string
+  deadline?: number
+}
 
 export default class Transaction {
   public static async send(dataObj: any): Promise<any> {
@@ -100,7 +117,7 @@ export default class Transaction {
     return stateApi.getBlockchainState();
   };
 
-  private static checkMultiSig = (parentSecret: string, senderSecret: string): boolean => {
+  private static checkMultiSig = (parentSecret?: string, senderSecret?: string): boolean => {
     return !!(parentSecret && senderSecret && parentSecret !== senderSecret);
   };
 
@@ -169,7 +186,7 @@ export default class Transaction {
    * Generate Transaction Structure
    * @documentation https://firstb.atlassian.net/wiki/spaces/APOLLO/pages/1250000936/Apollo+Transactions
    */
-  public static async sendMoneyTransactionBytes(data: any): Promise<any> {
+  public static async sendMoneyTransactionBytes(data: TransactionData): Promise<string> {
     return this.sendMoneyWithAttachmentTransactionBytes(data, true);
   }
 
@@ -177,7 +194,7 @@ export default class Transaction {
    * Generate Transaction Structure
    * @documentation https://firstb.atlassian.net/wiki/spaces/APOLLO/pages/1250000936/Apollo+Transactions
    */
-  public static async sendMoneyWithAttachmentTransactionBytes(data: any, isTextAttachment: boolean): Promise<any> {
+  public static async sendMoneyWithAttachmentTransactionBytes(data: TransactionData, isTextAttachment: boolean): Promise<string> {
     const getType = (): any => {
       const typeBuf = Buffer.alloc(1);
       const subtypeBuf = Buffer.alloc(1);
@@ -231,8 +248,8 @@ export default class Transaction {
       const { type, subtype, flags, appendix } = getType();
       const timestamp = this.getTimestamp(data.txTimestamp);
       const deadline = this.bytesValue(data.deadline || 1440, 2);
-      const senderPublicKey = this.getKey(data.senderSecret || data.parentSecret);
-      const recipientId = this.getRecipient(data.recipient || data.parent);
+      const senderPublicKey = this.getKey((data.senderSecret || data.parentSecret) as string);
+      const recipientId = this.getRecipient((data.recipient || data.parent) as string);
       const amount = this.bytesValue(data.amount);
       const fee = this.bytesValue(data.fee);
       const referencedTransactionFullHash = Buffer.alloc(32);
@@ -271,7 +288,7 @@ export default class Transaction {
    * Generate Transaction Structure
    * @documentation https://firstb.atlassian.net/wiki/spaces/APOLLO/pages/1250000936/Apollo+Transactions
    */
-  public static async childAccountTransactionBytes(data: any): Promise<any> {
+  public static async childAccountTransactionBytes(data: any): Promise<string> {
     const getType = (): any => {
       const typeBuf = Buffer.alloc(1);
       const subtypeBuf = Buffer.alloc(1);

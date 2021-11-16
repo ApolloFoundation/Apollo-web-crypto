@@ -6,8 +6,6 @@
 import { BigInteger } from 'jsbn';
 import * as crypto from 'crypto'; // TODO remove
 import { sha256 } from 'js-sha256'; // TODO remove
-const Buffer = require('buffer/').Buffer;
-
 import { SecureRandom } from './util/vendors/rng';
 import { getSECCurveByName } from './util/vendors/sec';
 import { ECAsymCrypto } from './util/vendors/ec_crypto';

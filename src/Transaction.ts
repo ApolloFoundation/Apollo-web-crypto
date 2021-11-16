@@ -1,5 +1,4 @@
-const Buffer = require('buffer/').Buffer;
-
+import { Buffer } from 'buffer/index.js';
 import Crypto from './Crypto';
 import ElGamalEncryption from './ElGamalEncryption';
 import { handleFetch, POST } from './helpers/fetch';
@@ -85,6 +84,7 @@ export default class Transaction {
   private static bytesValue = (value: number | string | undefined = 0, bytes: number = 8) => {
     const resBuff = Buffer.alloc(8);
     const valueBigInt = BigInt(value);
+    // @ts-ignore
     resBuff.writeBigUInt64LE(valueBigInt, 0);
     return resBuff.slice(0, bytes);
   };
@@ -106,6 +106,7 @@ export default class Transaction {
     if (recipient && recipient.length > 0) {
       const recipientID: string = ReedSolomonDecode(recipient);
       const bigIntRes = BigInt(recipientID);
+      // @ts-ignore
       resBuff.writeBigUInt64LE(bigIntRes, 0);
     }
     return resBuff;
@@ -224,7 +225,7 @@ export default class Transaction {
             appendix = Buffer.alloc(5 + attachmentLength);
             appendix.writeUInt8(1, 0); // version
             appendix.writeIntLE(attachmentLength, 1, 4); // the payload length max 1000 bytes
-            appendix.fill(attachmentBuff, 5, 5 + attachmentLength, 'binary'); // the byte array of payload
+            appendix.fill(attachmentBuff, 5, 5 + attachmentLength); // the byte array of payload
           } else {
             throw new Error('Attachment type must be hex string');
           }

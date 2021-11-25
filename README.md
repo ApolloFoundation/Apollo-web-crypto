@@ -33,7 +33,6 @@ npm install -g yarn
 Firstly you need to generate api help folder. It is based on .yaml file in the main [Apollo backend](https://github.com/ApolloFoundation/Apollo) repository.
 ```
 yarn install
-yarn generate-apollo-api-v2
 ```
 For build of that module:
 ```

@@ -1,9 +1,30 @@
 import Transaction from '../Transaction';
+import converters from '../util/converters';
+import { handleFetch, POST } from '../helpers/fetch';
 
 const ONE_APL = 100000000;
 
 describe('Transaction Tests', () => {
   process.env.APL_SERVER = 'https://apl-t3-1.testnet3.apollowallet.org';
+
+  test('SMC publish with offline sign', async () => {
+    const data = {
+      name: 'MyAPL20PersonalLockable',
+      sender: 'APL-NZKH-MZRE-2CTT-98NPZ',
+      params: [],
+      value: '0',
+      fuelPrice: '100',
+      fuelLimit: '500000000',
+      source: 'class MyAPL20PersonalLockable extends APL20PersonalLockable {\n      constructor(){\n          super(\'TEST1\',\'TST\',\'100000000000000\',\'50000000000\',\'100000000\',\'3000000000\',\'0x7fd6869feeca7e2f\');\n      }\n    }',
+      secretPhrase: '0',
+    };
+    const resultTx = await handleFetch(`/rest/v2/smc/publish`, POST, data, true);
+    const originalSignedTransactionString = resultTx.tx
+    const unsignedTransactionString = originalSignedTransactionString.substring(0, originalSignedTransactionString.indexOf('4d53494700000000'));
+    const signedTransactionBytes = await Transaction.multiSigTxBytes(unsignedTransactionString, [ data.secretPhrase ]);
+    const signedTransactionString = converters.byteArrayToHexString(signedTransactionBytes)
+    expect(signedTransactionString).toEqual(originalSignedTransactionString);
+  })
 
   test('SendMoney with doNotSign', async () => {
     const data = {

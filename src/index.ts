@@ -1,5 +1,5 @@
 import { BigInteger } from 'jsbn';
-import * as ApolloApi from './apollo-api-v2/api';
+import converters from './util/converters';
 import Transaction from './Transaction';
 import Crypto from './Crypto';
 import ElGamalEncryption from './ElGamalEncryption';
@@ -20,4 +20,4 @@ export const processAccountRStoHex = (accountRS: string, needPrefix: boolean = f
   return needPrefix ? `0x${additionalElement}${hexString}` : hexString;
 };
 
-export { Transaction, Crypto, ElGamalEncryption, ApolloApi };
+export { Transaction, Crypto, ElGamalEncryption, converters };

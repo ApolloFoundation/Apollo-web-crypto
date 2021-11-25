@@ -17,7 +17,7 @@ export const handleFetch = async (url: string, method: string, value: any = null
       queryPath = `?${Object.keys(value)
         .map((key) => `${key}=${value[key]}`)
         .join('&')}`;
-    } else if (!isJson){
+    } else if (!isJson) {
       options.body = Object.keys(value)
         .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(value[key])}`)
         .join('&');

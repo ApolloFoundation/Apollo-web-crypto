@@ -88,14 +88,15 @@ export default class Transaction {
       if (!Crypto.verifySignature(signature, unsignedTransactionString, publicKey)) {
         return;
       }
-      const transactionBytes = unsignedTransactionString.substr(0, 192) + signature + unsignedTransactionString.substr(320);
+      const transactionBytes =
+        unsignedTransactionString.substr(0, 192) + signature + unsignedTransactionString.substr(320);
       return {
         transactionBytes,
         signature,
       };
     }
     return;
-  }
+  };
 
   private static bytesValue = (value: number | string | undefined = 0, bytes: number = 8) => {
     const resBuff = Buffer.alloc(8);
@@ -133,28 +134,24 @@ export default class Transaction {
   };
 
   public static multiSigTxBytes = (unsignedTransaction: Buffer | string, signers: string[]): Buffer => {
-    let unsignedTransactionBytes
+    let unsignedTransactionBytes;
     if (typeof unsignedTransaction === 'string') {
       unsignedTransactionBytes = Buffer.from(converters.hexStringToByteArray(unsignedTransaction));
     } else {
-      unsignedTransactionBytes = unsignedTransaction
+      unsignedTransactionBytes = unsignedTransaction;
     }
     const magic = Buffer.from('MSIG');
     const reserved = Buffer.alloc(4);
     const participantNumber = Buffer.alloc(2);
-    const signersLength = signers.length
+    const signersLength = signers.length;
     participantNumber.writeUInt8(signersLength, 0);
-    let signatureBytes = Buffer.concat([
-      magic,
-      reserved,
-      participantNumber,
-    ]);
+    let signatureBytes = Buffer.concat([magic, reserved, participantNumber]);
     for (let i = 0; i < signersLength; i++) {
       const signer = signers[i];
       const senderPublicKey = Transaction.getKey(signer);
       const keyId = senderPublicKey.slice(0, 8);
       const signature = Crypto.signBytes(unsignedTransactionBytes, signer);
-      signatureBytes = Buffer.concat([signatureBytes, keyId, signature])
+      signatureBytes = Buffer.concat([signatureBytes, keyId, signature]);
     }
     return Buffer.concat([unsignedTransactionBytes, signatureBytes]);
   };
@@ -179,11 +176,11 @@ export default class Transaction {
   };
 
   public static oneSigTxBytes = (unsignedTransaction: Buffer | string, signer: string): Buffer => {
-    let unsignedTransactionBytes
+    let unsignedTransactionBytes;
     if (typeof unsignedTransaction === 'string') {
       unsignedTransactionBytes = Buffer.from(converters.hexStringToByteArray(unsignedTransaction));
     } else {
-      unsignedTransactionBytes = unsignedTransaction
+      unsignedTransactionBytes = unsignedTransaction;
     }
     const signatureBytes = Crypto.signBytes(unsignedTransactionBytes, signer);
     unsignedTransactionBytes.set(signatureBytes, 96);
@@ -271,7 +268,7 @@ export default class Transaction {
 
     try {
       if (!data.fee || !(data.recipient || data.parent) || !(data.senderSecret || data.parentSecret)) {
-        throw new Error('One or several fields are missing: fee, recipient or parent, senderSecret or parentSecret')
+        throw new Error('One or several fields are missing: fee, recipient or parent, senderSecret or parentSecret');
       }
       const { type, subtype, flags, appendix } = getType();
       const timestamp = this.getTimestamp(data.txTimestamp);
@@ -301,12 +298,12 @@ export default class Transaction {
       };
       let signedTransactionBytes;
       if (!!data.parentSecret && !!data.senderSecret && data.parentSecret !== data.senderSecret) {
-        signedTransactionBytes = this.multiSigTx(resultObj, [ data.parentSecret, data.senderSecret ]);
+        signedTransactionBytes = this.multiSigTx(resultObj, [data.parentSecret, data.senderSecret]);
       } else if (!!data.senderSecret || !!data.parentSecret) {
         const signer = (data.senderSecret || data.parentSecret) as string;
         signedTransactionBytes = this.oneSigTx(resultObj, signer);
       } else {
-        throw new Error('No signers are specified')
+        throw new Error('No signers are specified');
       }
       return converters.byteArrayToHexString(signedTransactionBytes);
     } catch (e) {
@@ -318,12 +315,12 @@ export default class Transaction {
   public static async signTransactionBytes(unsignedTransactionBytes: Buffer, data: any): Promise<string> {
     let signedTransactionBytes;
     if (!!data.parentSecret && !!data.senderSecret && data.parentSecret !== data.senderSecret) {
-      signedTransactionBytes = this.multiSigTxBytes(unsignedTransactionBytes, [ data.parentSecret, data.senderSecret ]);
+      signedTransactionBytes = this.multiSigTxBytes(unsignedTransactionBytes, [data.parentSecret, data.senderSecret]);
     } else if (!!data.senderSecret || !!data.parentSecret) {
       const signer = (data.senderSecret || data.parentSecret) as string;
       signedTransactionBytes = this.oneSigTxBytes(unsignedTransactionBytes, signer);
     } else {
-      throw new Error('No signers are specified')
+      throw new Error('No signers are specified');
     }
     return converters.byteArrayToHexString(signedTransactionBytes);
   }

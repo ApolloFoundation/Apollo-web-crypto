@@ -147,7 +147,7 @@ export default class Crypto {
   }
 
   private static aesEncryptImpl(payload: number[], options: any): number[] {
-    const ivBytes = new Uint32Array(16);
+    const ivBytes = new Uint8Array(32);
     crypto.randomFillSync(ivBytes);
 
     // CryptoJS likes WordArray parameters

@@ -5,7 +5,7 @@ import { handleFetch, POST } from '../helpers/fetch';
 const ONE_APL = 100000000;
 
 describe('Transaction Tests', () => {
-  process.env.APL_SERVER = 'https://apl-t3-1.testnet3.apollowallet.org';
+  process.env.APL_SERVER = 'https://wallet.test.apollowallet.org';
 
   test('SMC publish with offline sign', async () => {
     const data = {
@@ -79,5 +79,27 @@ describe('Transaction Tests', () => {
     };
     const responseTransaction = await Transaction.send(dataTransaction);
     expect(responseTransaction.transaction).not.toBeUndefined();
+  });
+
+  test('Parse transactionBytes', async () => {
+    const data = {
+      requestType: 'sendMoney',
+      recipient: 'APL-NZKH-MZRE-2CTT-98NPZ',
+      amountATM: 3 * ONE_APL,
+      feeATM: ONE_APL,
+      secretPhrase: '0',
+      sender: 3705364957971254799,
+      deadline: 1440,
+    };
+    const response = await Transaction.sendWithOfflineSign(data);
+    // console.log('---response---', response);
+    const dataTransaction = {
+      requestType: 'broadcastTransaction',
+      // transactionJSON: JSON.stringify(response.transactionJSON),
+      transactionBytes: response.transactionBytes,
+    };
+    const parsedTransaction = await Transaction.parseTransactionBytes(response.transactionBytes);
+
+    // console.log(parsedTransaction);
   });
 });

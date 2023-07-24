@@ -392,4 +392,29 @@ export default class Transaction {
       throw new Error(e.message);
     }
   }
+
+  public static parseTransactionBytes = (transactionBytes: Buffer | string): any => {
+    if (transactionBytes) {
+      if (typeof transactionBytes === 'string') {
+        transactionBytes = Buffer.from(converters.hexStringToByteArray(transactionBytes));
+      }
+      const result = {
+        type: transactionBytes.slice(0, 1), // 1
+        subtype: transactionBytes.slice(1, 2), // 1
+        timestamp: transactionBytes.slice(2, 6).readUInt32LE(0), // 4
+        deadline: transactionBytes.slice(6, 8), // 2
+        senderPublicKey: converters.byteArrayToHexString(transactionBytes.slice(8, 40)), // 32
+        recipientId: converters.byteArrayToHexString(transactionBytes.slice(40, 48)), // 8
+        amount: transactionBytes.slice(48, 56).readUInt32LE(0), // 8
+        fee: transactionBytes.slice(56, 64).readUInt32LE(0), // 8
+        referencedTransactionFullHash: converters.byteArrayToHexString(transactionBytes.slice(64, 96)), // 32
+        signature: converters.byteArrayToHexString(transactionBytes.slice(96, 160)), // 64
+        flags: converters.byteArrayToHexString(transactionBytes.slice(160, 164)), // 4
+        ecBlockHeight: transactionBytes.slice(164, 168).readUInt32LE(0), // 4
+        ecBlockId: transactionBytes.slice(168, 176).readUInt32LE(0), // 8
+      };
+
+      return result;
+    }
+  }
 }

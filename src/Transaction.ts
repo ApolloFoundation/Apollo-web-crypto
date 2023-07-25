@@ -421,5 +421,5 @@ export default class Transaction {
 
       return result;
     }
-  }
+  };
 }

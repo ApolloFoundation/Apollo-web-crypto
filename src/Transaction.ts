@@ -3,7 +3,7 @@ import Crypto from './Crypto';
 import ElGamalEncryption from './ElGamalEncryption';
 import { handleFetch, POST } from './helpers/fetch';
 import converters from './util/converters';
-import { ReedSolomonDecode } from './ReedSolomon';
+import { ReedSolomonDecode, ReedSolomonEncode } from './ReedSolomon';
 import { TransactionType } from './constants/TransactionType';
 
 export interface TransactionData {
@@ -398,20 +398,25 @@ export default class Transaction {
       if (typeof transactionBytes === 'string') {
         transactionBytes = Buffer.from(converters.hexStringToByteArray(transactionBytes));
       }
+      const senderPublicKey = converters.byteArrayToHexString(transactionBytes.slice(8, 40));
+      const recipient = transactionBytes.readBigUInt64LE(40).toString();
       const result = {
-        type: transactionBytes.slice(0, 1), // 1
-        subtype: transactionBytes.slice(1, 2), // 1
-        timestamp: transactionBytes.slice(2, 6).readUInt32LE(0), // 4
-        deadline: transactionBytes.slice(6, 8), // 2
-        senderPublicKey: converters.byteArrayToHexString(transactionBytes.slice(8, 40)), // 32
-        recipientId: converters.byteArrayToHexString(transactionBytes.slice(40, 48)), // 8
-        amount: transactionBytes.slice(48, 56).readUInt32LE(0), // 8
-        fee: transactionBytes.slice(56, 64).readUInt32LE(0), // 8
+        type: transactionBytes.readUInt8(0), // 1
+        subtype: transactionBytes.readUInt8(1), // 1
+        timestamp: transactionBytes.readUIntLE(2, 4), // 4
+        deadline: transactionBytes.readUIntLE(6, 2), // 2
+        senderPublicKey, // 32
+        sender: Crypto.getAccountIdFromPublicKey(senderPublicKey, false),
+        senderRS: Crypto.getAccountIdFromPublicKey(senderPublicKey, true),
+        recipient, // 8
+        recipientRS: ReedSolomonEncode(recipient), // 8
+        amount: transactionBytes.readUIntLE(48, 8), // 8
+        fee: transactionBytes.readUIntLE(56, 8), // 8
         referencedTransactionFullHash: converters.byteArrayToHexString(transactionBytes.slice(64, 96)), // 32
         signature: converters.byteArrayToHexString(transactionBytes.slice(96, 160)), // 64
-        flags: converters.byteArrayToHexString(transactionBytes.slice(160, 164)), // 4
-        ecBlockHeight: transactionBytes.slice(164, 168).readUInt32LE(0), // 4
-        ecBlockId: transactionBytes.slice(168, 176).readUInt32LE(0), // 8
+        flags: transactionBytes.readUIntLE(160, 4), // 4
+        ecBlockHeight: transactionBytes.readUIntLE(164, 4), // 4
+        ecBlockId: transactionBytes.readBigUInt64LE(168).toString(), // 8
       };
 
       return result;

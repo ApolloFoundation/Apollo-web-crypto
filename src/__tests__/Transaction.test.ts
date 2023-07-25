@@ -92,14 +92,8 @@ describe('Transaction Tests', () => {
       deadline: 1440,
     };
     const response = await Transaction.sendWithOfflineSign(data);
-    console.log('---response---', response);
-    const dataTransaction = {
-      requestType: 'broadcastTransaction',
-      // transactionJSON: JSON.stringify(response.transactionJSON),
-      transactionBytes: response.transactionBytes,
-    };
     const parsedTransaction = await Transaction.parseTransactionBytes(response.transactionBytes);
 
-    console.log(parsedTransaction);
+    expect(response.transactionJSON.signature).toEqual(parsedTransaction.signature);
   });
 });

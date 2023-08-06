@@ -21,6 +21,25 @@ export interface TransactionData {
   deadline?: number;
 }
 
+export interface UniversalTransactionData {
+  recipient: string;
+  txTimestamp?: number;
+  ecBlockHeight?: number | string;
+  ecBlockId?: string;
+  amount?: number;
+  feeATM?: number;
+  parent?: string;
+  parentSecret?: string;
+  sender?: number;
+  senderSecret?: string;
+  passphrase?: string;
+  attachment?: string;
+  deadline?: number;
+  requestType?: string;
+  currency?: string;
+  units?: number;
+}
+
 export default class Transaction {
   public static async send(dataObj: any): Promise<any> {
     if (!dataObj.requestType) {
@@ -106,7 +125,7 @@ export default class Transaction {
     return resBuff.slice(0, bytes);
   };
 
-  private static getTimestamp = (value: number | undefined = 0) => {
+  private static getTimestamp = (value: number = 0) => {
     const timestampBuf = Buffer.alloc(4);
     timestampBuf.writeUIntLE(value, 0, 4);
     return timestampBuf;
@@ -212,51 +231,61 @@ export default class Transaction {
    * Generate Transaction Structure
    * @documentation https://firstb.atlassian.net/wiki/spaces/APOLLO/pages/1250000936/Apollo+Transactions
    */
-  public static async sendMoneyTransactionBytes(data: TransactionData): Promise<string> {
-    return this.sendMoneyWithAttachmentTransactionBytes(data, true);
+  public static async sendMoneyTransactionBytes(data: UniversalTransactionData): Promise<string> {
+    return this.getTransactionBytes(data, true);
   }
 
   /**
    * Generate Transaction Structure
    * @documentation https://firstb.atlassian.net/wiki/spaces/APOLLO/pages/1250000936/Apollo+Transactions
    */
-  public static async sendMoneyWithAttachmentTransactionBytes(
-    data: TransactionData,
-    isTextAttachment: boolean,
+  public static async getTransactionBytes(
+    data: UniversalTransactionData,
+    isTextAttachment: boolean = true,
   ): Promise<string> {
     const getType = (): any => {
       const typeBuf = Buffer.alloc(1);
       const subtypeBuf = Buffer.alloc(1);
       const flagsBuf = Buffer.alloc(4);
       let appendix = Buffer.alloc(0);
-      typeBuf.writeUInt8(TransactionType.TYPE_PAYMENT, 0);
-      if (this.checkMultiSig(data.parentSecret, data.senderSecret)) {
-        subtypeBuf.writeUInt8(0x20, 0);
-      } else {
-        subtypeBuf.writeUInt8(0x10, 0);
-      }
-      if (data.attachment) {
-        flagsBuf.writeUIntLE(0x01, 0, 4);
-        if (isTextAttachment) {
-          const attachmentLength = data.attachment.length;
-          appendix = Buffer.alloc(5 + attachmentLength);
-          appendix.writeUInt8(1, 0); // version
-          appendix.writeIntLE(attachmentLength | 0x80000000, 1, 4); // the payload length max 1000 bytes
-          appendix.write(data.attachment, 5); // the byte array of payload
+      if (data.requestType === 'transferCurrency') {
+        typeBuf.writeUInt8(TransactionType.TYPE_MONETARY_SYSTEM, 0);
+        const version = 1;
+        const subtype = 3;
+        subtypeBuf.writeUIntLE((version << 4) & 0xF0 | subtype & 0x0F, 0, 1);
+        flagsBuf.writeUIntLE(0x0, 0, 4);
+        appendix = Buffer.alloc(1 + 8 + 8);
+        appendix.writeUInt8(1, 0); // version
+        // @ts-ignore
+        appendix.writeBigUInt64LE(BigInt(data.currency), 1);
+        // @ts-ignore
+        appendix.writeBigUInt64LE(BigInt(data.units), 9);
+      } else { // if (data.requestType === 'sendMoney') {
+        typeBuf.writeUInt8(TransactionType.TYPE_PAYMENT, 0);
+        if (this.checkMultiSig(data.parentSecret, data.senderSecret)) {
+          subtypeBuf.writeUInt8(0x20, 0);
         } else {
-          if (typeof data.attachment === 'string') {
+          subtypeBuf.writeUInt8(0x10, 0);
+        }
+        if (data.attachment) {
+          flagsBuf.writeUIntLE(0x01, 0, 4);
+          if (isTextAttachment) {
+            const attachmentLength = data.attachment.length;
+            appendix = Buffer.alloc(5 + attachmentLength);
+            appendix.writeUInt8(1, 0); // version
+            appendix.writeIntLE(attachmentLength | 0x80000000, 1, 4); // the payload length max 1000 bytes
+            appendix.write(data.attachment, 5); // the byte array of payload
+          } else {
             const attachmentBuff: Uint8Array = new Uint8Array(converters.hexStringToByteArray(data.attachment));
             const attachmentLength = attachmentBuff.length;
             appendix = Buffer.alloc(5 + attachmentLength);
             appendix.writeUInt8(1, 0); // version
             appendix.writeIntLE(attachmentLength, 1, 4); // the payload length max 1000 bytes
             appendix.fill(attachmentBuff, 5, 5 + attachmentLength); // the byte array of payload
-          } else {
-            throw new Error('Attachment type must be hex string');
           }
+        } else {
+          flagsBuf.writeUIntLE(0x0, 0, 4);
         }
-      } else {
-        flagsBuf.writeUIntLE(0x0, 0, 4);
       }
       return {
         type: typeBuf,
@@ -267,8 +296,8 @@ export default class Transaction {
     };
 
     try {
-      if (!data.fee || !(data.recipient || data.parent) || !(data.senderSecret || data.parentSecret)) {
-        throw new Error('One or several fields are missing: fee, recipient or parent, senderSecret or parentSecret');
+      if (!data.feeATM || !(data.recipient || data.parent) || !(data.senderSecret || data.parentSecret)) {
+        throw new Error('One or several fields are missing: feeATM, recipient or parent, senderSecret or parentSecret');
       }
       const { type, subtype, flags, appendix } = getType();
       const timestamp = this.getTimestamp(data.txTimestamp);
@@ -276,7 +305,7 @@ export default class Transaction {
       const senderPublicKey = this.getKey((data.senderSecret || data.parentSecret) as string);
       const recipientId = this.getRecipient((data.recipient || data.parent) as string);
       const amount = this.bytesValue(data.amount);
-      const fee = this.bytesValue(data.fee);
+      const fee = this.bytesValue(data.feeATM);
       const referencedTransactionFullHash = Buffer.alloc(32);
       const ecBlockHeight = this.bytesValue(data.ecBlockHeight, 4);
       const ecBlockId = this.bytesValue(data.ecBlockId);
@@ -365,7 +394,7 @@ export default class Transaction {
       const senderPublicKey = this.getKey(data.senderSecret || data.parentSecret);
       const recipientId = this.getRecipient(data.recipient || data.parent);
       const amount = this.bytesValue(data.amount);
-      const fee = this.bytesValue(data.fee);
+      const fee = this.bytesValue(data.feeATM);
       const referencedTransactionFullHash = Buffer.alloc(32);
       const ecBlockHeight = this.bytesValue(data.ecBlockHeight, 4);
       const ecBlockId = this.bytesValue(data.ecBlockId);
@@ -421,5 +450,5 @@ export default class Transaction {
 
       return result;
     }
-  }
+  };
 }

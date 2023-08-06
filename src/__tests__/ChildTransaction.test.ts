@@ -1,5 +1,5 @@
 import { Crypto, Transaction } from '../index';
-import { TransactionData } from '../Transaction';
+import { TransactionData, UniversalTransactionData } from '../Transaction';
 import { handleFetch, GET, POST } from '../helpers/fetch';
 
 const ONE_APL = 100000000;
@@ -10,10 +10,10 @@ describe('Child Transactions Tests', () => {
 
   test('Create transactionBytes for send money', async () => {
     const blockchainResult = await handleFetch(`/rest/v2/state/blockchain`, GET, null, true);
-    const data: TransactionData = {
+    const data: UniversalTransactionData = {
       parent: 'APL-632K-TWX3-2ALQ-973CU',
       parentSecret: '101',
-      sender: 'APL-8QBE-DAN8-ZYF4-HE3GZ', // child 1
+      // sender: 'APL-8QBE-DAN8-ZYF4-HE3GZ', // child 1
       senderSecret: '1011',
       recipient: 'APL-DGFX-8ZYH-M5B8-C3XDT', // child 2
       amount: 3 * ONE_APL,

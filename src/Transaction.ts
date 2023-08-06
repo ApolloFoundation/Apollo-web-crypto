@@ -252,7 +252,7 @@ export default class Transaction {
         typeBuf.writeUInt8(TransactionType.TYPE_MONETARY_SYSTEM, 0);
         const version = 1;
         const subtype = 3;
-        subtypeBuf.writeUIntLE((version << 4) & 0xF0 | subtype & 0x0F, 0, 1);
+        subtypeBuf.writeUIntLE(((version << 4) & 0xf0) | (subtype & 0x0f), 0, 1);
         flagsBuf.writeUIntLE(0x0, 0, 4);
         appendix = Buffer.alloc(1 + 8 + 8);
         appendix.writeUInt8(1, 0); // version
@@ -260,7 +260,8 @@ export default class Transaction {
         appendix.writeBigUInt64LE(BigInt(data.currency), 1);
         // @ts-ignore
         appendix.writeBigUInt64LE(BigInt(data.units), 9);
-      } else { // if (data.requestType === 'sendMoney') {
+      } else {
+        // if (data.requestType === 'sendMoney') {
         typeBuf.writeUInt8(TransactionType.TYPE_PAYMENT, 0);
         if (this.checkMultiSig(data.parentSecret, data.senderSecret)) {
           subtypeBuf.writeUInt8(0x20, 0);

@@ -1,4 +1,4 @@
-import Transaction from '../Transaction';
+import Transaction, { UniversalTransactionData } from '../Transaction';
 import converters from '../util/converters';
 import { handleFetch, POST } from '../helpers/fetch';
 
@@ -78,6 +78,38 @@ describe('Transaction Tests', () => {
       transactionBytes: response.transactionBytes,
     };
     const responseTransaction = await Transaction.send(dataTransaction);
+    expect(responseTransaction.transaction).not.toBeUndefined();
+  });
+
+  test('Get Transaction Bytes for transferCurrency', async () => {
+    // Create transaction structure
+    const secretPhrase = '0';
+    const ONE_APL = 100000000;
+    const epochBeginning = 1515931200;
+    const txTimestamp = parseInt(String(new Date().getTime() / 1000)) - epochBeginning;
+    const data: UniversalTransactionData = {
+      senderSecret: secretPhrase,
+      requestType: 'transferCurrency',
+      feeATM: ONE_APL,
+      recipient: 'APL-X5JH-TJKJ-DVGC-5T2V8',
+      currency: '9809178445488406385',
+      units: 10,
+      sender: 9211698109297098287,
+      deadline: 1440,
+      txTimestamp: txTimestamp,
+    };
+
+    console.log('---data---', data);
+    // Get transaction bytes
+    const transactionBytes = await Transaction.getTransactionBytes(data);
+    const dataTransaction = {
+      requestType: 'broadcastTransaction',
+      transactionBytes: transactionBytes,
+    };
+    const responseTransaction = await Transaction.send(dataTransaction);
+
+    console.log('---transactionBytes---', transactionBytes);
+    console.log('---responseTransaction---', responseTransaction);
     expect(responseTransaction.transaction).not.toBeUndefined();
   });
 

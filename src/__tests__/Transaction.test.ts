@@ -81,6 +81,22 @@ describe('Transaction Tests', () => {
     expect(responseTransaction.transaction).not.toBeUndefined();
   });
 
+  test('Parse transactionBytes', async () => {
+    const data = {
+      requestType: 'sendMoney',
+      recipient: 'APL-NZKH-MZRE-2CTT-98NPZ',
+      amountATM: 3 * ONE_APL,
+      feeATM: ONE_APL,
+      secretPhrase: '0',
+      sender: 3705364957971254799,
+      deadline: 1440,
+    };
+    const response = await Transaction.sendWithOfflineSign(data);
+    const parsedTransaction = await Transaction.parseTransactionBytes(response.transactionBytes);
+
+    expect(response.transactionJSON.signature).toEqual(parsedTransaction.signature);
+  });
+
   test('Get Transaction Bytes for transferCurrency', async () => {
     // Create transaction structure
     const secretPhrase = '0';
@@ -107,21 +123,5 @@ describe('Transaction Tests', () => {
     };
     const responseTransaction = await Transaction.send(dataTransaction);
     expect(responseTransaction.transaction).not.toBeUndefined();
-  });
-
-  test('Parse transactionBytes', async () => {
-    const data = {
-      requestType: 'sendMoney',
-      recipient: 'APL-NZKH-MZRE-2CTT-98NPZ',
-      amountATM: 3 * ONE_APL,
-      feeATM: ONE_APL,
-      secretPhrase: '0',
-      sender: 3705364957971254799,
-      deadline: 1440,
-    };
-    const response = await Transaction.sendWithOfflineSign(data);
-    const parsedTransaction = await Transaction.parseTransactionBytes(response.transactionBytes);
-
-    expect(response.transactionJSON.signature).toEqual(parsedTransaction.signature);
   });
 });

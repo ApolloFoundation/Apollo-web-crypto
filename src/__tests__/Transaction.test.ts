@@ -99,7 +99,6 @@ describe('Transaction Tests', () => {
       txTimestamp: txTimestamp,
     };
 
-    console.log('---data---', data);
     // Get transaction bytes
     const transactionBytes = await Transaction.getTransactionBytes(data);
     const dataTransaction = {
@@ -107,9 +106,6 @@ describe('Transaction Tests', () => {
       transactionBytes: transactionBytes,
     };
     const responseTransaction = await Transaction.send(dataTransaction);
-
-    console.log('---transactionBytes---', transactionBytes);
-    console.log('---responseTransaction---', responseTransaction);
     expect(responseTransaction.transaction).not.toBeUndefined();
   });
 

@@ -276,16 +276,12 @@ export default class Transaction {
             appendix.writeIntLE(attachmentLength | 0x80000000, 1, 4); // the payload length max 1000 bytes
             appendix.write(data.attachment, 5); // the byte array of payload
           } else {
-            if (typeof data.attachment === 'string') {
-              const attachmentBuff: Uint8Array = new Uint8Array(converters.hexStringToByteArray(data.attachment));
-              const attachmentLength = attachmentBuff.length;
-              appendix = Buffer.alloc(5 + attachmentLength);
-              appendix.writeUInt8(1, 0); // version
-              appendix.writeIntLE(attachmentLength, 1, 4); // the payload length max 1000 bytes
-              appendix.fill(attachmentBuff, 5, 5 + attachmentLength); // the byte array of payload
-            } else {
-              throw new Error('Attachment type must be hex string');
-            }
+            const attachmentBuff: Uint8Array = new Uint8Array(converters.hexStringToByteArray(data.attachment));
+            const attachmentLength = attachmentBuff.length;
+            appendix = Buffer.alloc(5 + attachmentLength);
+            appendix.writeUInt8(1, 0); // version
+            appendix.writeIntLE(attachmentLength, 1, 4); // the payload length max 1000 bytes
+            appendix.fill(attachmentBuff, 5, 5 + attachmentLength); // the byte array of payload
           }
         } else {
           flagsBuf.writeUIntLE(0x0, 0, 4);

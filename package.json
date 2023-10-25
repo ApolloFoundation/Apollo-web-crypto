@@ -44,7 +44,7 @@
     "@types/pvutils": "0.0.2",
     "@types/request": "2.48.5",
     "buffer": "^6.0.3",
-    "crypto-js": "4.0.0",
+    "crypto-js": "4.2.0",
     "isomorphic-fetch": "2.2.1",
     "js-sha256": "0.9.0",
     "jsbn": "1.1.0",
